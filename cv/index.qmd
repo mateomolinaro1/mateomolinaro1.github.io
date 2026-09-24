@@ -1,0 +1,102 @@
+---
+title: "Curriculum Vitae"
+---
+
+[<i class="bi bi-download"></i> Download PDF](../files/cv/cv.pdf){.btn .btn-outline-primary .btn-sm download="Mateo_Molinaro_CV.pdf"}
+
+## Professional Experience
+
+**VIA AM** (Systematic Asset Manager) · Paris · Aug 2026 – present\
+*Quantitative Equity Researcher, full time*
+
+- Harvesting alternative datasets to develop low frequency systematic equity strategies
+
+**BNP Paribas AM** (AuM €1,600 bn) · Paris · Apr 2026 – Aug 2026\
+*Quantitative Equity Researcher, intern*
+
+- Developed and backtested different portfolio construction methods
+- Refined the low volatility anomaly
+- Refactored production code in OOP
+
+**Candriam** (New York Life Investments subsidiary, AuM €155 bn) · Paris · Nov 2024 – Jul 2025\
+*Quantitative Equity Researcher, apprentice*
+
+- Created and put in production a dashboard of fundamental ratios for the Russell 1000 constituents for the PMs
+- Programmed an OOP backtesting architecture in Python
+- Designed [quantitative equity (fundamental data-based) strategies](https://github.com/mateomolinaro1/The_Cross_Section_of_Stocks_Returns)
+- Developed quantitative trend following strategies
+
+**Lazard Frères Gestion** (Lazard Asset Management subsidiary, AuM €42 bn) · Paris · Jan 2024 – Jun 2024\
+*Equity Analyst, intern*
+
+- Programmed a scoring system and a sequential filtering process to screen stocks (Python)
+- Presented [investment cases](https://github.com/mateomolinaro1/Financial_Analyses/blob/main) (financial analysis, valuation) leading to €17m new investments
+- Drew up reports on companies (top management and sell-side meetings, earnings announcements)
+
+**Scientific Beta** (Multi-Factor Index Provider, AuR \$65 bn) · Nice · Jul 2023 – Dec 2023\
+*Quantitative Equity Researcher, intern*
+
+- Programmed a [US database](https://github.com/mateomolinaro1/Financial_Ratios_DataBase_WRDS) (6,000+ companies spanning 70 years) of financial ratios (WRDS) and anomalies (150 variables)
+- Developed systematic factor strategies (Matlab)
+- Presented results to the research team and summarized empirical asset pricing papers
+
+## Education
+
+**ENSAE Paris, Institut Polytechnique de Paris** · Paris · Sep 2025 – May 2026\
+*MSc in Data Science*
+
+- Focus on: Data Science Production Tools (Git, Docker, AWS), Network Science, Macroeconometrics, Statistics, Time-Series, Machine Learning, NLP, Python, SQL
+
+**Paris-Dauphine, PSL** · Paris · Sep 2024 – May 2025\
+*MSc in Quantitative Finance (272)*
+
+- Focus on: Non-Linear Econometrics, Volatility Econometrics, Quantitative Portfolio Management, Machine Learning, Python
+
+## Skills & Languages
+
+**Languages:** English (fluent, TOEIC 960/990), Spanish (intermediate), French (native)\
+**Technical:** Python, WRDS, Excel, Matlab, Bloomberg, SQL, Git, GitHub, AWS (S3, EC2), Docker
+
+## Teaching
+
+**Paris 1 Panthéon-Sorbonne** · Lecturer · Jan 2027 – Mar 2027
+
+- Equity Quantitative Investment Strategies, 2nd year MSc in Banking and Finance
+
+**Paris-Dauphine, PSL** · Lecturer · Oct 2026 – Apr 2027
+
+- Python for Finance, 1st year MSc in Economics and Finance
+- Equity Quantitative Investment Strategies, 2nd year MSc in Quantitative Finance
+
+**Université Paris Cité** · Lecturer · Sep 2025 – Dec 2025
+
+- Descriptive Statistics, 1st year BSc in Economics and Management
+
+See [Teaching](../teaching/index.qmd) for course material.
+
+## Working Papers
+
+1. [Do earnings call transcripts predict post-announcement returns?](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6695758), May 2026
+2. [Dynamic Allocation with Macro Factor-Mimicking Portfolios](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6392018), Apr 2026
+3. [Predicting Analyst Performance: A Machine Learning Fund-of-Analysts Framework](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6064609), Feb 2026
+4. [US Stock Market Network Analysis for Crisis Prediction](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6695798), Feb 2026
+5. [Analysis, Replication and Extension: "What are the events that shake our world" (Engle & Campos-Martins): Measuring and Modelling the Global COVOL Factor](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5402599), Sep 2025
+6. [Classifying US Firms into Trade Peace and Trade War Stocks: an NLP Analysis of Earnings Call Transcripts Approach](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5402604), Sep 2025
+7. [Santa Claus Rally: A Global Equity Markets and International Factor-Based Analysis](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5402587), Sep 2025
+
+See [Research](../research/index.qmd) for abstracts and PDFs.
+
+## Additional Experience
+
+**Objectif Réussite** (equal opportunities student-led club) · Sep 2021 – Sep 2022\
+*Professor and conference manager*
+
+- Trained 10 students over 1 year for post-bac studies
+- Organized 3 conferences about educational guidance for high school students
+- Planned outings and a cultural trip
+
+**Interests:** climbing, teaching, fishing, investing
+
+## Full CV (PDF)
+
+<iframe class="pdf-embed" src="../files/cv/cv.pdf" title="CV (PDF)"></iframe>

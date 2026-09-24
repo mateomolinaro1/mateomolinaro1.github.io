@@ -1,0 +1,4 @@
+# Options shared by every blog post
+format:
+  html:
+    toc: true

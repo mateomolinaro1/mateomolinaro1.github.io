@@ -1,0 +1,12 @@
+---
+title: "Contact"
+---
+
+The best way to reach me is by email.
+
+- <i class="bi bi-envelope"></i> [mateo0609@hotmail.fr](mailto:mateo0609@hotmail.fr)
+- <i class="bi bi-linkedin"></i> [LinkedIn](https://www.linkedin.com/in/mat%C3%A9o-molinaro/)
+- <i class="bi bi-github"></i> [GitHub](https://github.com/mateomolinaro1)
+- <i class="bi bi-ssrn"></i> [SSRN](https://papers.ssrn.com/sol3/cf_dev/AbsByAuth.cfm?per_id=7834211)
+
+Based in Paris, France.

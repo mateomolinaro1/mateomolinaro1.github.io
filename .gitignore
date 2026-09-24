@@ -1,0 +1,25 @@
+/.quarto/
+/_site/
+.venv/
+__pycache__/
+.ipynb_checkpoints/
+.idea/workspace.xml
+
+# LaTeX build artefacts (if you keep .tex sources in the repo)
+*.aux
+*.log
+*.out
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+*.toc
+*.bbl
+*.blg
+
+**/*.quarto_ipynb
+
+# Drop folder for raw material to add to the site (not published)
+/_inbox/
+
+# Material kept out of the site AND the public repo (e.g. solutions)
+/_private/

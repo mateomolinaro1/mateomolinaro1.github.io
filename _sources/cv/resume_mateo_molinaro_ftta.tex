@@ -1,0 +1,228 @@
+%-------------------------
+% Resume in Latex
+% Author: Matéo Molinaro (CV format by Sourabh Bajaj)
+% License: MIT
+%------------------------
+
+\documentclass[letterpaper,11pt]{article}
+
+\usepackage{latexsym}
+\usepackage[empty]{fullpage}
+\usepackage{titlesec}
+\usepackage{marvosym}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage{verbatim}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fancyhdr}
+\usepackage[english]{babel}
+\usepackage{tabularx}
+\usepackage{fontawesome5}
+\usepackage{multicol}
+\setlength{\multicolsep}{-3.0pt}
+\setlength{\columnsep}{-1pt}
+\input{glyphtounicode}
+
+\pagestyle{fancy}
+\fancyhf{} % clear all header and footer fields
+\fancyfoot{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+% Adjust margins
+\addtolength{\oddsidemargin}{-0.6in}
+\addtolength{\evensidemargin}{-0.5in}
+\addtolength{\textwidth}{1.19in}
+\addtolength{\topmargin}{-.7in}
+\addtolength{\textheight}{1.4in}
+
+\urlstyle{same}
+
+\raggedbottom
+\raggedright
+\setlength{\tabcolsep}{0in}
+
+% Sections formatting
+\titleformat{\section}{
+  \vspace{-4pt}\scshape\raggedright\large\bfseries
+}{}{0em}{}[\color{black}\titlerule \vspace{-5pt}]
+
+% Custom commands
+\newcommand{\resumeItem}[1]{
+  \item\small{
+    {#1 \vspace{-2pt}}
+  }
+}
+
+\newcommand{\resumeSubheading}[4]{
+  \vspace{-2pt}\item
+    \begin{tabular*}{0.97\textwidth}[t]{l@{\extracolsep{\fill}}r}
+      \textbf{#1} & #2 \\
+      \textit{\small#3} & \textit{\small #4} \\
+    \end{tabular*}\vspace{-7pt}
+}
+
+\newcommand{\resumeSubSubheading}[2]{
+    \item
+    \begin{tabular*}{0.97\textwidth}{l@{\extracolsep{\fill}}r}
+      \textit{\small#1} & \textit{\small #2} \\
+    \end{tabular*}\vspace{-7pt}
+}
+
+\newcommand{\resumeProjectHeading}[2]{
+    \item
+    \begin{tabular*}{0.97\textwidth}{l@{\extracolsep{\fill}}r}
+      \small#1 & #2 \\
+    \end{tabular*}\vspace{-7pt}
+}
+
+\newcommand{\resumeSubItem}[1]{\resumeItem{#1}\vspace{-4pt}}
+
+\renewcommand\labelitemii{$\vcenter{\hbox{\tiny$\bullet$}}$}
+
+\newcommand{\resumeSubHeadingListStart}{\begin{itemize}[leftmargin=0.15in, label={}]}
+\newcommand{\resumeSubHeadingListEnd}{\end{itemize}}
+\newcommand{\resumeItemListStart}{\begin{itemize}}
+\newcommand{\resumeItemListEnd}{\end{itemize}\vspace{-5pt}}
+
+%-------------------------------------------
+%%%%%%  RESUME STARTS HERE  %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+\begin{center}
+    \textbf{\Huge \scshape Matéo Molinaro} \\ \vspace{1pt}
+
+    % \textnormal{Start: May 2026} $|$
+    +33 6 80 35 02 50 $|$
+    \href{mailto:mateo.molinaro@ensae.fr}{mateomolinaro@gmail.com} $|$
+    \href{https://github.com/mateomolinaro1}{GitHub: mateomolinaro1} $|$
+    \href{https://papers.ssrn.com/sol3/cf_dev/AbsByAuth.cfm?per_id=7834211}{SSRN: Matéo Molinaro}
+\end{center}
+
+%-----------EXPERIENCE-----------
+\section{Professional Experience}
+  \resumeSubHeadingListStart
+  \resumeSubheading
+      {VIA AM (Systematic Asset Manager)}{Aug 2026 -- Current}
+      {Quantitative Equity Researcher - Full Time}{Paris, France}
+      \resumeItemListStart
+            \resumeItem{Harvesting alternative datasets to develop low frequency systematic equity strategies}
+      \resumeItemListEnd
+     \resumeSubheading
+          {BNPP AM (AuM €1600 Bn)}{Apr 2026 -- Aug 2026}
+      {Quantitative Equity Researcher -- Intern}{Paris, France}
+      \resumeItemListStart
+        \resumeItem{Developed and backtested different portfolio construction methods}
+        \resumeItem{Refined the low volatility anomaly}
+        \resumeItem{Refactored production code in OOP}
+      \resumeItemListEnd
+    \resumeSubheading
+      {Candriam (New York Life Investments subsidiary, AuM €155 Bn)}{Nov 2024 -- July 2025}
+      {Quantitative Equity Researcher -- Apprentice}{Paris, France}
+      \resumeItemListStart
+        \resumeItem{Created and put in production a dashboard of fundamental ratios for the Russell 1000 constituents for the PMs}
+        \resumeItem{Programmed an OOP backtesting architecture in Python}
+        \resumeItem{Designed \href{https://github.com/mateomolinaro1/The_Cross_Section_of_Stocks_Returns}{\textbf{quantitative equity (fundamental data-based) strategies}}}
+        \resumeItem{Developed quantitative trend following strategies}
+      \resumeItemListEnd
+
+    \resumeSubheading
+      {Lazard Frères Gestion (Lazard Asset Management subsidiary, AuM €42 Bn)}{Jan 2024 -- June 2024}
+      {Equity Analyst -- Intern}{Paris, France}
+      \resumeItemListStart
+        \resumeItem{Programmed a scoring system and a sequential filtering process to screen stocks (Python)}
+        \resumeItem{Presented \href{https://github.com/mateomolinaro1/Financial_Analyses/blob/main}{\textbf{investment cases}} (financial analysis, valuation) leading to €17m new investments}
+        \resumeItem{Draw up reports on companies (top management and sell-side meetings, earnings announcements)}
+      \resumeItemListEnd
+
+    \resumeSubheading
+      {Scientific Beta (Multi-Factor Index Provider, AuR \$65 Bn)}{July 2023 -- Dec 2023}
+      {Quantitative Equity Researcher -- Intern}{Nice, France}
+      \resumeItemListStart
+        \resumeItem{Programmed a \href{https://github.com/mateomolinaro1/Financial_Ratios_DataBase_WRDS}{\textbf{US database}} (+6000 companies spanning 70 years) of financial ratios (WRDS) and anomalies (150 variables)}
+        \resumeItem{Developed systematic factor strategies (Matlab)}
+        \resumeItem{Presented results to research team and summarized empirical asset pricing papers}
+      \resumeItemListEnd
+  \resumeSubHeadingListEnd
+
+%-----------EDUCATION-----------
+\section{Education}
+  \resumeSubHeadingListStart
+    \resumeSubheading
+      {ENSAE Paris - Institut Polytechnique de Paris}{Sep 2025 -- May 2026}
+      {MSc in Data Science}{Paris, France}
+      \resumeItemListStart
+        \resumeItem{Focus on: Data Science Production Tools (Git, Docker, AWS), Network Science, Macroeconometrics, Statistics, Time-Series, Machine Learning, NLP, Python, SQL}
+      \resumeItemListEnd
+
+    \resumeSubheading
+      {Paris-Dauphine - PSL}{Sep 2024 -- May 2025}
+      {MSc in Quantitative Finance (272)}{Paris, France}
+      \resumeItemListStart
+        \resumeItem{Focus on: Non-Linear Econometrics, Volatility Econometrics, Quantitative Portfolio Management, Machine Learning, Python}
+      \resumeItemListEnd
+  \resumeSubHeadingListEnd
+
+%-----------SKILLS-----------
+\section{Skills \& Languages}
+  \begin{itemize}[leftmargin=0.15in, label={}]
+    \small{\item{
+      \textbf{Languages}{: English (fluent, TOEIC: 960/990), Spanish (intermediate) and French (Native)} \\
+      \textbf{Technical}{: Python, WRDS, Excel, Matlab, Bloomberg, SQL, Git, GitHub, AWS (S3, EC2), Docker}
+    }}
+  \end{itemize}
+
+%-----------TEACHING-----------
+\section{Teaching}
+  \resumeSubHeadingListStart
+    \resumeSubheading
+      {Paris 1 Panthéon-Sorbonne}{Jan 2027 -- March 2027}
+      {Lecturer}{Paris, France}
+      \resumeItemListStart
+        \resumeItem{Equity Quantitative Investment Strategies -- 2nd year MSc in Banking and Finance}
+      \resumeItemListEnd
+    \resumeSubheading
+      {Paris-Dauphine -- PSL}{Oct 2026 -- April 2027}
+      {Lecturer}{Paris, France}
+      \resumeItemListStart
+        \resumeItem{Python for Finance -- 1st year MSc Economics and Finance}
+        \resumeItem{Equity Quantitative Investment Strategies -- 2nd year MSc Quantitative Finance}
+      \resumeItemListEnd
+    \resumeSubheading
+      {Université Paris Cité}{Sept 2025 -- Dec 2025}
+      {Lecturer}{Paris, France}
+      \resumeItemListStart
+        \resumeItem{Descriptive Statistics -- BSc 1 Economics and Management}
+      \resumeItemListEnd
+  \resumeSubHeadingListEnd
+
+%-----------WORKING PAPERS-----------
+\section{Working Papers}
+  \begin{enumerate}[leftmargin=0.25in, label={\arabic*.}, itemsep=-2pt, topsep=0pt]
+    \resumeItem{\href{https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6695758}{Do earnings call transcripts predict post-announcement returns?} --- Posted: May 2026}
+    \resumeItem{\href{https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6392018}{Dynamic Allocation with Macro Factor-Mimicking Portfolios} --- Posted: Apr 2026}
+    \resumeItem{\href{https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6064609}{Predicting Analyst Performance: A Machine Learning Fund-of-Analysts Framework} --- Posted: Feb 2026}
+    \resumeItem{\href{https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6695798}{US Stock Market Network Analysis for Crisis Prediction} --- Posted: Feb 2026}
+    \resumeItem{\href{https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5402599}{Analysis, Replication and Extension: ``What are the events that shake our world'' (Engle \& Campos-Martins) -- Measuring and Modelling Global COVOL Factor} --- Posted: Sep 2025}
+    \resumeItem{\href{https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5402604}{Classifying US Firms into Trade Peace and Trade War Stocks: an NLP Analysis of Earnings Call Transcripts Approach} --- Posted: Sep 2025}
+    \resumeItem{\href{https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5402587}{Santa Claus Rally: A Global Equity Markets and International Factor-Based Analysis} --- Posted: Sep 2025}
+  \end{enumerate}
+  \vspace{-5pt}
+
+%-----------ADDITIONAL-----------
+\section{Additional Experiences}
+  \resumeSubHeadingListStart
+    \resumeSubheading
+      {Objectif Réussite (equal opportunities student-led club)}{Sep 2021 -- Sep 2022}
+      {Professor and conferences' manager}{}
+      \resumeItemListStart
+        \resumeItem{Trained 10 students over 1 year for post-bac studies}
+        \resumeItem{Organized 3 conferences about educational guidance for high school students}
+        \resumeItem{Planned outings and cultural trip}
+      \resumeItemListEnd
+
+    \item \textbf{Interests:} climbing, teaching, fishing, investing
+  \resumeSubHeadingListEnd
+
+\end{document}

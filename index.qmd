@@ -1,0 +1,47 @@
+---
+title: "Matéo Molinaro"
+subtitle: "Quantitative Equity Researcher · VIA AM"
+image: files/img/profile.jpg
+image-alt: "Portrait of Matéo Molinaro"
+about:
+  template: trestles
+  image-shape: round
+  image-width: 14em
+  links:
+    - icon: envelope
+      text: Email
+      href: mailto:mateo0609@hotmail.fr
+    - icon: github
+      text: GitHub
+      href: https://github.com/mateomolinaro1
+    - icon: linkedin
+      text: LinkedIn
+      href: https://www.linkedin.com/in/mat%C3%A9o-molinaro/
+    - icon: ssrn
+      text: SSRN
+      href: https://papers.ssrn.com/sol3/cf_dev/AbsByAuth.cfm?per_id=7834211
+    - icon: file-earmark-person
+      text: CV
+      href: cv/index.qmd
+---
+
+Matéo Molinaro is a junior Quantitative Equity Researcher at VIA AM, where he specializes in low-mid frequency systematic equity strategies. He previously interned as a quantitative equity researcher at BNP Paribas Asset Management, Candriam, and Scientific Beta, working on alpha research and portfolio construction, and interned at Lazard Asset Management as a fundamental equity analyst, presenting stock pitches to portfolio managers.
+
+Matéo holds a Master's degree in Quantitative Finance (MSc 272) from Paris-Dauphine and a Specialized Master (MS) in Data Science from ENSAE. He is also a lecturer at Paris-Dauphine, where he teaches the [Python for Finance](teaching/index.qmd#python-for-finance) course at Master's level, and at Paris 1 Panthéon-Sorbonne, where he teaches his own course, [Equity Quantitative Investment Strategies](teaching/index.qmd#equity-quantitative-investment-strategies), at Master's level.
+
+In his free time, he enjoys doing [research](research/index.qmd) (asset pricing) and indoor climbing.
+
+> *"All models are wrong, but some are useful."* — George E. P. Box
+
+## Education
+
+**ENSAE Paris, Institut Polytechnique de Paris** · MSc in Data Science · 2025 – 2026\
+**Paris-Dauphine, PSL** · MSc in Quantitative Finance (272) · 2024 – 2025
+
+## Experience
+
+**VIA AM** · Quantitative Equity Researcher · 2026 – present\
+**BNP Paribas AM** · Quantitative Equity Researcher, intern · 2026\
+**Candriam** · Quantitative Equity Researcher, apprentice · 2024 – 2025\
+**Lazard Frères Gestion** · Equity Analyst, intern · 2024\
+**Scientific Beta** · Quantitative Equity Researcher, intern · 2023

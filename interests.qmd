@@ -1,0 +1,17 @@
+---
+title: "Interests"
+---
+
+## Research interests
+
+- Asset pricing
+- Financial and macro econometrics
+- Machine learning
+
+See my [working papers](research/index.qmd).
+
+## Outside research
+
+- Climbing
+- Fishing
+- Teaching (see my [courses](teaching/index.qmd))

@@ -1,0 +1,56 @@
+project:
+  type: website
+  output-dir: _site
+  render:
+    - "*.qmd"
+    - "**/*.qmd"
+  # Downloadable files that Quarto should copy as-is (not render)
+  resources:
+    - "files/**"
+
+website:
+  title: "Matéo Molinaro"
+  site-url: https://mateomolinaro1.github.io
+  description: "Matéo Molinaro, Quantitative Equity Researcher: research, teaching, and blog."
+  favicon: files/img/favicon.svg
+  page-navigation: false
+  back-to-top-navigation: true
+  navbar:
+    left:
+      - href: index.qmd
+        text: Home
+      - href: cv/index.qmd
+        text: CV
+      - href: research/index.qmd
+        text: Research
+      - href: teaching/index.qmd
+        text: Teaching
+      - href: interests.qmd
+        text: Interests
+      - href: blog/index.qmd
+        text: Blog
+      - href: contact.qmd
+        text: Contact
+    right:
+      - icon: github
+        href: https://github.com/mateomolinaro1
+        aria-label: GitHub
+      - icon: linkedin
+        href: https://www.linkedin.com/in/mat%C3%A9o-molinaro/
+        aria-label: LinkedIn
+      - icon: ssrn
+        href: https://papers.ssrn.com/sol3/cf_dev/AbsByAuth.cfm?per_id=7834211
+        aria-label: SSRN
+      - icon: rss
+        href: blog/index.xml
+        aria-label: RSS feed
+  page-footer:
+    center: "© 2026 Matéo Molinaro · Built with [Quarto](https://quarto.org)"
+
+format:
+  html:
+    theme: cosmo
+    css: styles.css
+    toc: false
+    smooth-scroll: true
+    link-external-newwindow: true

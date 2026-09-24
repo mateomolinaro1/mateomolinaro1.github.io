@@ -1,0 +1,91 @@
+---
+title: "Research"
+---
+
+My research focuses on asset pricing, financial econometrics and machine learning applied to equity markets. All papers are available on [SSRN](https://papers.ssrn.com/sol3/cf_dev/AbsByAuth.cfm?per_id=7834211).
+
+## Working Papers
+
+::: {.entry}
+[Do Earnings Call Transcripts Predict Post-Announcement Returns? An NLP-Based Approach on Russell 1000 Equities]{.entry-title}\
+[with Pierre Chuzeville · May 2026]{.entry-meta}
+
+<details>
+<summary>Abstract</summary>
+This paper investigates whether earnings call transcripts contain information that is predictive of post-announcement idiosyncratic stock returns. We construct a systematic machine learning pipeline that transforms raw transcript text into quantitative signals and evaluates their out-of-sample forecasting performance on the Russell 1000 universe. We extract two families of text representations, sparse TF-IDF bag-of-words features on preprocessed transcripts, and dense semantic embeddings from the pre-trained sentence transformer all-MiniLM-L6-v2, and combine them with traditional finance-specific sentiment scores derived from the Loughran–McDonald dictionary. For each earnings event, targets are defined as multi-horizon cumulative idiosyncratic returns (residuals from a rolling CAPM estimated exclusively on pre-filing data) at horizons of 1, 3, 5 and 21 trading days. Model training and evaluation follow a strict quarterly walk-forward cross-validation scheme that eliminates forward-looking bias by design. We compare three feature compositions across four regression models (Ridge, Lasso, Random Forest, Gradient Boosting) and evaluate performance using directional accuracy, long–short spread, and an interpretable excess-RMSE relative to the CAPM null model. This framework allows us to systematically identify which combination of text representation, prediction horizon, and model architecture extracts the most economically meaningful signals from earnings calls.
+</details>
+
+[[<i class="bi bi-file-earmark-pdf"></i> PDF](../files/papers/earnings-calls-post-announcement-returns.pdf) [<i class="bi bi-ssrn"></i> SSRN](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6695758)]{.entry-links}
+:::
+
+::: {.entry}
+[Dynamic Allocation with Macro Factor-Mimicking Portfolios]{.entry-title}\
+[with Lucien Chaudron · April 2026]{.entry-meta}
+
+<details>
+<summary>Abstract</summary>
+This paper investigates whether macroeconomic information can be effectively translated into investment strategies through the use of macro factor-mimicking portfolios and predictive modeling. We focus on inflation as a representative macroeconomic variable and construct tradable portfolios that replicate inflation exposure by estimating stock-level sensitivities and forming long–short factor-mimicking portfolios. Building on this framework, we employ a range of statistical and machine-learning models to forecast inflation dynamics using a large macroeconomic dataset. These forecasts are then used to implement a dynamic asset allocation strategy that adjusts portfolio exposures in response to predicted macroeconomic conditions. We evaluate the performance of the proposed strategy in terms of return, risk, and risk-adjusted metrics, and compare it to static benchmark allocations. Our results provide evidence on the economic value of combining macro factor-mimicking portfolios with forecasting techniques for dynamic portfolio management.
+</details>
+
+[[<i class="bi bi-file-earmark-pdf"></i> PDF](../files/papers/dynamic-allocation-macro-fmp.pdf) [<i class="bi bi-ssrn"></i> SSRN](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6392018)]{.entry-links}
+:::
+
+::: {.entry}
+[Predicting Analyst Performance: A Machine Learning Fund-of-Analysts Framework]{.entry-title}\
+[with Thibault Charbonnier · February 2026]{.entry-meta}
+
+<details>
+<summary>Abstract</summary>
+Inspired by Alpha in Analysts (2025), this paper investigates whether the cross-sectional and time-series heterogeneity in sell-side analyst skill can be exploited using modern machine learning techniques. We treat each analyst as a portfolio manager and construct analyst-level portfolios based on their 12-month target price recommendations, translating implied returns into systematic long–short positions. The objective is to predict one-month-ahead 12-months cumulative returns of these analyst portfolios using a rich set of analyst and portfolio-level characteristics. We extend the original framework along three key dimensions. First, we expand the information set from six to twenty-four predictive features capturing analyst behavior, portfolio composition, and historical performance. Second, we move from rolling ordinary least squares to an expanding walk-forward cross-validation framework, allowing for realistic real-time prediction and model selection. Third, we compare linear and non-linear models by evaluating 8 forecasting approaches: OLS benchmarks with Ridge, Lasso, and Elastic Net regularization, as well as Random Forests, XGBoost, LightGBM, and multilayer perceptrons. Our empirical analysis covers 1,474 unique analysts and 105,866 analyst-month observations. We find that, although machine learning provides only modest improvements in point forecasting accuracy, it delivers large gains in cross-sectional ranking ability, a key input for analyst-selection and long–short investment strategies. However, for now, these gains hardly translate into economically meaningful improvements in a dynamic "fund-of-analysts" allocation strategy that weights analysts based on predicted performance.
+</details>
+
+[[<i class="bi bi-file-earmark-pdf"></i> PDF](../files/papers/predicting-analyst-performance.pdf) [<i class="bi bi-ssrn"></i> SSRN](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6064609)]{.entry-links}
+:::
+
+::: {.entry}
+[US Stock Market Network Analysis for Crisis Prediction]{.entry-title}\
+[with Habib Karamoko · February 2026]{.entry-meta}
+
+<details>
+<summary>Abstract</summary>
+This paper investigates whether the topology of stock correlation networks conveys predictive information about future equity market crises. We model the cross-sectional dependence structure of large-cap U.S. equities as a dynamic weighted graph, constructed from rolling Ledoit–Wolf shrinkage correlation matrices with exponential time-weighting, and threshold these matrices to retain economically meaningful co-movement links. We extract two complementary feature sets: graph-level network statistics summarising the global topology at each date, and time-series features capturing the dynamics of the market return distribution over multiple horizons. These features serve as inputs to a binary classification framework that predicts whether the forward 21-day maximum drawdown will exceed a crisis threshold, evaluated strictly out-of-sample through an expanding walk-forward cross-validation scheme. In addition to the predictive exercise, we construct a panel of per-stock network centrality measures: degree, strength, clustering, eigenvector centrality, PageRank, and community membership that can serve as the basis for cross-sectional investment strategies. Our methodology provides a replicable, modular pipeline for translating network topology into actionable financial signals.
+</details>
+
+[[<i class="bi bi-file-earmark-pdf"></i> PDF](../files/papers/network-analysis-crisis-prediction.pdf) [<i class="bi bi-ssrn"></i> SSRN](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6695798)]{.entry-links}
+:::
+
+::: {.entry}
+[Analysis, Replication and Extension: "What Are the Events That Shake Our World?" (Engle & Campos-Martins) — Measuring and Modelling the Global COVOL Factor]{.entry-title}\
+[with Théo Domingues, Ryhan Chebrek and Julien Moury · September 2025 · Paper in French]{.entry-meta}
+
+<details>
+<summary>Abstract</summary>
+This note presents a detailed replication of the global common volatility (COVOL) model proposed by Engle & Campos-Martins (2023). After setting out the economic rationale and the mathematical and econometric formulation of the COVOL factor, we describe each step in depth, from the univariate preprocessing of returns to the post-estimation tests of the EM procedure (proposed by Hastie et al., 2009). We review the methodological choices, identification constraints and optimizations used, before validating robustness through Monte Carlo simulations and applying the model to the unbalanced panel of 47 country ETFs used in the paper, as well as to macroeconomic and risk factors. We also extend the replication with a direct application to dynamic portfolio construction based on the estimated COVOL factor over time.
+</details>
+
+[[<i class="bi bi-file-earmark-pdf"></i> PDF](../files/papers/covol-replication.pdf) [<i class="bi bi-ssrn"></i> SSRN](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5402599)]{.entry-links}
+:::
+
+::: {.entry}
+[Classifying US Firms into Trade Peace and Trade War Stocks: An NLP Analysis of Earnings Call Transcripts Approach]{.entry-title}\
+[with Enzo Montariol · September 2025]{.entry-meta}
+
+<details>
+<summary>Abstract</summary>
+Global trade developments can affect firms' performance, particularly for companies with significant international exposure. Understanding how sensitive individual firms are to trade-related shocks and classifying them as "trade peace" (benefiting from trade policy shocks) or "trade war" stocks is crucial for investors, policymakers, and corporate decision-makers. This study proposes an approach to classify firms' trade sensitivity by applying Natural Language Processing (NLP) techniques to 54,851 earnings call transcripts of Russell 1000 constituents from 2007 to 2025. We employ bag-of-words (BoW), sentiment-adjusted BoW (BoWws), TF-IDF combined with logistic regression, and FinBERT, a transformer-based financial language model, to extract textual signals related to trade exposure. Firms are classified as trade peace or trade war stocks based on model predictions, and we evaluate the economic relevance of these classifications through an event study of cumulative abnormal returns (CARs) around major trade policy events. Our findings suggest that while none of the models clearly discriminate between trade peace and trade war stocks in terms of opposite-signed CAR differences, the TF-IDF–logistic regression model achieves the largest absolute difference in mean cross-sectional CARs, equal to 1.29%. These results highlight the potential of earnings call transcripts as a source for measuring firms' trade sensitivity and provide insights into the strengths and limitations of various NLP-based approaches for classifying firms' exposure to global trade shocks.
+</details>
+
+[[<i class="bi bi-file-earmark-pdf"></i> PDF](../files/papers/trade-peace-trade-war-nlp.pdf) [<i class="bi bi-ssrn"></i> SSRN](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5402604)]{.entry-links}
+:::
+
+::: {.entry}
+[Santa Claus Rally: A Global Equity Markets and International Factor-Based Analysis]{.entry-title}\
+[with Ryhan Chebrek, Julien Moury and Théo Domingues · September 2025]{.entry-meta}
+
+<details>
+<summary>Abstract</summary>
+This factor extension of the Santa Claus Rally (SCR) literature contributes threefold. First, the SCR analysis (together with the December Rally (DR) analysis, including all trading days of December) is conducted on 5 factors (MKT, SMB, HML FF, HML Devil and UMD, as defined and provided by AQR) across 24 countries and 5 geographical zones. Second, we conduct the SCR and DR analyses over the overall period (1998–2023) as well as year by year, quantifying the proportion of years in which the SCR and DR materialized. Third, we assess the statistical significance of the SCR and DR across factors using different tests: non-parametric (t-test, Mann–Whitney U test) and parametric (standard p-values of regression coefficients, and those corrected with White and Newey–West (HAC) robust standard errors) to measure the effect of test choices.
+</details>
+
+[[<i class="bi bi-file-earmark-pdf"></i> PDF](../files/papers/santa-claus-rally.pdf) [<i class="bi bi-ssrn"></i> SSRN](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5402587)]{.entry-links}
+:::
