@@ -7,6 +7,7 @@ project:
   # Downloadable files that Quarto should copy as-is (not render)
   resources:
     - "files/**"
+    - robots.txt
 
 website:
   title: "Matéo Molinaro"

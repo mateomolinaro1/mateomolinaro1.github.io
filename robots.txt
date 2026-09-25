@@ -1,0 +1,4 @@
+User-agent: *
+Disallow: /files/teaching/python-for-finance/
+
+Sitemap: https://mateomolinaro1.github.io/sitemap.xml
