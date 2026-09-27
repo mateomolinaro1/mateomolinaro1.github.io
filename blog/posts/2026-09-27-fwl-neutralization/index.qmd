@@ -78,8 +78,6 @@ X_2^\top X_2\,\widehat{\mathbf{c}} = X_2^\top\mathbf{v}
 X_2^\top\big(\mathbf{v} - X_2\widehat{\mathbf{c}}\big) = \mathbf{0}.
 $$
 
-These are the **normal equations**. "Normal" means perpendicular: row $j$ of this system says $\sum_i (X_2)_{ij}\,\widehat{u}_i = 0$, i.e. the residual vector $\widehat{\mathbf{u}} = \mathbf{v} - X_2\widehat{\mathbf{c}}$ is orthogonal to column $j$ of $X_2$. This makes sense: if the residuals were still correlated with one of the regressors, adding a bit more of that regressor would reduce the sum of squares, so we would not be at the minimum.
-
 *Solving.* If the columns of $X_2$ are linearly independent (no column is a combination of the others), $X_2^\top X_2$ is invertible, and
 
 $$
