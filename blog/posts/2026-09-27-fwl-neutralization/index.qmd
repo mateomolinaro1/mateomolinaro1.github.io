@@ -1,6 +1,6 @@
 ---
-title: "The Frisch–Waugh–Lovell Theorem: Neutralizing Industry and Beta Exposures"
-description: "Regress a raw signal on industry dummies and betas, keep the residual as the “pure” signal, and the Frisch–Waugh–Lovell theorem guarantees you get exactly the coefficient of the full cross-sectional regression. What that coefficient means as a portfolio, and the sequential-neutralization pitfall that quietly breaks industry neutrality."
+title: "The Frisch–Waugh–Lovell Theorem: Building a Pure Signal"
+description: "Regress a raw signal on industry dummies and betas and keep the residual: that is the “pure” signal. The Frisch–Waugh–Lovell theorem explains when you can do this step by step, why regressing on the raw beta after industry neutralization is a mistake, and what the beta loading really measures."
 author: "Matéo Molinaro"
 date: 2026-09-27
 categories: [econometrics, OLS, quant, python]
@@ -9,14 +9,11 @@ execute:
   freeze: auto
 ---
 
-Take a low-risk signal: buy stocks with low volatility and low leverage, sell the risky ones. By construction, it loads heavily on things that are not stock-specific. Low-volatility stocks are low-beta stocks, and they cluster in defensive industries such as utilities and consumer staples. So when the signal "works", is it rewarding low risk at the stock level, or is it simply a bet against the market and in favour of a few industries?
+Take a low-risk signal: favour stocks with low volatility and low leverage, penalize the risky ones. By construction, it loads heavily on things that are not stock-specific. Low-volatility stocks are low-beta stocks, and they cluster in defensive industries such as utilities and consumer staples. A portfolio built on the raw signal is therefore, for a large part, a bet against the market and in favour of a few industries.
 
-Quant equity researchers answer this by **neutralizing** the signal: regressing it, cross-sectionally, on industry dummies and betas, and keeping the residual as the **pure signal**. There are then two ways to measure its premium:
+Quant equity researchers remove these exposures by **neutralizing** the signal: they regress it, cross-sectionally, on industry dummies and betas, and keep the residual as the **pure signal**. In practice, this is often done in steps (first industries, then beta), and the question is whether the steps give the same result as the single regression.
 
-1. **Joint regression.** Regress stock returns on the raw signal *together with* the industry dummies and the betas, and read off the coefficient on the signal (a Fama–MacBeth cross-sectional regression).
-2. **Two steps.** First compute the pure signal, then regress returns on it alone.
-
-The Frisch–Waugh–Lovell (FWL) theorem says these give **exactly the same coefficient**. It also tells us what that coefficient is (the return of a portfolio that is industry-neutral, beta-neutral and has unit exposure to the signal), and it explains a very common mistake: neutralizing industries and beta one after the other in the wrong way.
+The Frisch–Waugh–Lovell (FWL) theorem answers this precisely. It says **how to neutralize step by step so that the result is exactly the pure signal**, it tells us what the beta loading of the signal really measures, and it explains a very common mistake: after neutralizing industries, regressing on the raw beta.
 
 ## The theorem
 
@@ -46,7 +43,7 @@ $$
 which is the OLS coefficient from regressing $M_2\mathbf{y}$ on $M_2 X_1$, and also from regressing $\mathbf{y}$ itself on $M_2 X_1$. Moreover, the residuals of the regression of $M_2\mathbf{y}$ on $M_2 X_1$ are identical to those of the full regression.
 :::
 
-In words: **to get the effect of $X_1$ controlling for $X_2$, first strip $X_2$ out of $X_1$, then regress.** Stripping it out of $\mathbf{y}$ as well is optional for the coefficient.
+In words: **to get the effect of $X_1$ controlling for $X_2$, first strip $X_2$ out of $X_1$, then regress.** Stripping $X_2$ out of $\mathbf{y}$ as well is optional for the coefficient, but necessary to get the residuals of the full regression.
 
 ### Proof
 
@@ -68,10 +65,7 @@ $$
 
 Because $M_2$ is symmetric and idempotent, $X_1^\top M_2 X_1 = (M_2X_1)^\top(M_2X_1)$ and $X_1^\top M_2\mathbf{y} = (M_2X_1)^\top(M_2\mathbf{y}) = (M_2X_1)^\top\mathbf{y}$, which are exactly the OLS formulas for the two short regressions. Finally, the equation $M_2\mathbf{y} = M_2 X_1 \widehat{\boldsymbol{\beta}}_1 + \mathbf{e}$ shows that $\mathbf{e}$ is also the residual of regressing $M_2\mathbf{y}$ on $M_2X_1$. $\blacksquare$
 
-Two useful remarks:
-
-- $M_2$ depends only on the **column space** of $X_2$. Industry dummies without an intercept, or an intercept plus $G-1$ dummies, span the same space and give the same $M_2$.
-- If the second step regresses the raw $\mathbf{y}$ on $M_2X_1$, the coefficient is the same but the residuals are not: the part of $\mathbf{y}$ explained by $X_2$ ends up in them.
+$M_2$ depends only on the **column space** of $X_2$: industry dummies without an intercept, or an intercept plus $G-1$ dummies, span the same space and give the same $M_2$.
 
 ## The pure signal: a cross-sectional regression
 
@@ -84,7 +78,7 @@ $$
 without an intercept, since the dummies already sum to the constant vector. The coefficients describe the contamination:
 
 - $\widehat{\gamma}_g$ is the level of the signal attributable to industry $g$ (for a low-risk signal, high for utilities, low for semiconductors);
-- $\widehat{\delta}$ is how much of the signal is explained by beta (clearly negative for a low-risk signal).
+- $\widehat{\delta}$ is the loading of the signal on beta (clearly negative for a low-risk signal).
 
 The **pure signal** is the residual:
 
@@ -102,54 +96,57 @@ D^\top\mathbf{s}^\perp = \mathbf{0}
 \mathbf{b}^\top\mathbf{s}^\perp = 0 .
 $$
 
-The pure signal sums to zero within every industry (hence also across the whole universe), and it is uncorrelated with beta.
+The pure signal sums to zero within every industry (hence also across the whole universe), and it has zero covariance with beta. Used as portfolio weights, $\mathbf{w} \propto \mathbf{s}^\perp$ gives a long–short portfolio with zero net weight in every industry, zero market beta and zero net investment.
 
-This is precisely the $M_2X_1$ of the theorem, with $X_1 = \mathbf{s}$ and $X_2 = [D, \mathbf{b}]$. By FWL, regressing returns on the pure signal gives the same coefficient as the joint regression of returns on $[\mathbf{s}, D, \mathbf{b}]$.
+## FWL applied to the signal
 
-## The sequential-neutralization pitfall
+Now apply the theorem to this regression, with $\mathbf{y} = \mathbf{s}$ (the raw signal), $X_1 = \mathbf{b}$ (beta) and $X_2 = D$ (the industry dummies). Write $M_D$ for the residual maker of the industry dummies: $M_D\mathbf{s}$ is the **industry-neutralized signal** and $M_D\mathbf{b}$ the **industry-neutralized beta**. FWL gives two results.
 
-In practice, the neutralization is often done in steps: first against industries, then against beta. Whether this works depends on a detail. FWL applies to the second step too: residualizing on $[D, \mathbf{b}]$ is the same as first residualizing on $D$, and then residualizing on the **industry-neutralized beta** $M_D\mathbf{b}$:
-
-$$
-M_{[D,\mathbf{b}]}\,\mathbf{s} = M_{M_D\mathbf{b}}\,\big(M_D\,\mathbf{s}\big).
-$$
-
-| Step 2 regresses the industry-neutralized signal $M_D\mathbf{s}$ on... | Result |
-|---|---|
-| the industry-neutralized beta $M_D\mathbf{b}$ | Correct: identical to the joint neutralization |
-| the raw beta $\mathbf{b}$ (with an intercept) | **Wrong**: beta-neutral, but no longer industry-neutral |
-
-The second version is a very common mistake. The raw beta varies across industries (utilities have low betas, semiconductors high ones), so subtracting a multiple of it from the signal puts industry tilts back in. Removing beta broke the industry neutrality that step 1 had achieved. The general rule: **when neutralizing sequentially, every later control must itself be neutralized against the earlier ones**, or you should simply run a single regression on all the controls.
-
-## The coefficient is a portfolio return
-
-The FWL coefficient has a direct portfolio interpretation. With a single signal,
+**1. The beta loading.** The coefficient on beta in the joint regression is the slope of the industry-neutralized signal on the industry-neutralized beta:
 
 $$
-\widehat{\lambda} = \frac{(\mathbf{s}^\perp)^\top \mathbf{r}}{(\mathbf{s}^\perp)^\top\mathbf{s}^\perp} = \mathbf{w}^\top\mathbf{r},
-\qquad
-\mathbf{w} = \frac{\mathbf{s}^\perp}{(\mathbf{s}^\perp)^\top\mathbf{s}^\perp},
+\widehat{\delta} = \frac{(M_D\mathbf{b})^\top (M_D\mathbf{s})}{(M_D\mathbf{b})^\top (M_D\mathbf{b})}.
 $$
 
-so the cross-sectional regression coefficient is the return of a portfolio with weights $\mathbf{w}$, proportional to the pure signal. Using the properties of $M = M_{[D,\mathbf{b}]}$, this portfolio has:
+So $\widehat{\delta}$ measures how the signal co-moves with beta **within industries**, not across them. A low-risk signal can load on beta both because defensive industries have low betas and because, inside every industry, the low-volatility stocks have the lowest betas. The industry part is already absorbed by $\widehat{\boldsymbol{\gamma}}$, and $\widehat{\delta}$ only captures the second effect.
 
-| Exposure | Value | Why |
+**2. The pure signal.** The residuals of this second-step regression are the residuals of the joint regression:
+
+$$
+\boxed{\;
+\mathbf{s}^\perp = M_{[D,\mathbf{b}]}\,\mathbf{s} = M_{M_D\mathbf{b}}\,\big(M_D\,\mathbf{s}\big)
+\;}
+$$
+
+In words, the pure signal can be built in two steps:
+
+1. neutralize the signal against industries: $M_D\mathbf{s}$;
+2. regress it on the **industry-neutralized beta** $M_D\mathbf{b}$, and keep the residual.
+
+The result is exactly the residual of the single regression of $\mathbf{s}$ on $[D, \mathbf{b}]$, to the last decimal. The same logic works in the other order (first beta, then industries), as long as the industry dummies are themselves beta-neutralized.
+
+### Two ways to get it wrong
+
+FWL also shows which shortcuts fail.
+
+| Second step | Beta loading $\widehat{\delta}$ | Residual |
 |---|---|---|
-| Signal: $\mathbf{s}^\top\mathbf{w}$ | $1$ | $\mathbf{s}^\top M\mathbf{s} = (M\mathbf{s})^\top(M\mathbf{s})$ |
-| Each industry: $D^\top\mathbf{w}$ | $\mathbf{0}$ | $D^\top M = 0$: long and short positions cancel within every industry |
-| Market beta: $\mathbf{b}^\top\mathbf{w}$ | $0$ | $\mathbf{b}^\top M = 0$ |
-| Net investment: $\mathbf{1}^\top\mathbf{w}$ | $0$ | $\mathbf{1}$ is the sum of the industry dummies: dollar-neutral |
+| $M_D\mathbf{s}$ on $M_D\mathbf{b}$ | Correct | **The pure signal** |
+| $\mathbf{s}$ (raw) on $M_D\mathbf{b}$ | Correct | Wrong: it still contains the industry component of $\mathbf{s}$ |
+| $M_D\mathbf{s}$ on the raw $\mathbf{b}$ (with an intercept) | Wrong | Wrong: beta-neutral, but **no longer industry-neutral** |
 
-This is the **pure factor portfolio** (or factor-mimicking portfolio) of the signal: among all portfolios with these exposures, it is the one with the smallest sum of squared weights. Each date's Fama–MacBeth coefficient is its realized return, so the time series of coefficients is a backtest of a pure long–short strategy, and its average and $t$-statistic measure the signal's premium beyond industries and beta. In practice, the pure signal is often rescaled to a volatility target before being used as portfolio weights. This multiplies the coefficient by a constant, but does not change the neutrality properties.
+The second row is the subtle one: FWL guarantees the coefficient when only the regressor is neutralized, but not the residuals. If you want the pure signal itself, both sides must be industry-neutralized.
+
+The third row is the very common mistake. The raw beta varies across industries (utilities have low betas, semiconductors high ones). Regressing on it mixes the within-industry relation between signal and beta with the across-industry variation of beta, so $\widehat{\delta}$ is wrong. And subtracting a multiple of the raw beta from $M_D\mathbf{s}$ puts industry tilts back into the signal: removing beta has broken the industry neutrality obtained in step 1. The general rule: **when neutralizing sequentially, every later control must itself be neutralized against the earlier ones**, or you should simply run a single regression on all the controls.
 
 ::: {.callout-tip appearance="simple"}
 ## Weighted regressions
-With WLS (for example weights proportional to the square root of market capitalization, a common choice to limit the influence of small caps), FWL still holds with the weighted residual maker $M_2^{W} = I - X_2 (X_2^\top W X_2)^{-1} X_2^\top W$, and the neutrality conditions hold in the weighted sense.
+The neutralization is often run with weights, for example proportional to the square root of market capitalization, so that the neutrality holds for a cap-weighted portfolio. FWL still holds with the weighted residual maker $M_2^{W} = I - X_2 (X_2^\top W X_2)^{-1} X_2^\top W$, and the neutrality conditions then hold in the weighted sense ($D^\top W\mathbf{s}^\perp = \mathbf{0}$ and $\mathbf{b}^\top W\mathbf{s}^\perp = 0$).
 :::
 
 ## A simulation with a low-risk signal
 
-Let us build a low-risk signal on a simulated universe, neutralize it, and check every claim above.
+Let us build a low-risk signal on a simulated universe, neutralize it in each of these ways, and check every claim above.
 
 ```{python}
 #| code-fold: show
@@ -168,7 +165,6 @@ IntArray: TypeAlias = npt.NDArray[np.int64]  # integer labels, e.g. the industry
 rng: np.random.Generator = np.random.default_rng(42)  # fixed seed -> reproducible results
 N_STOCKS: int = 3_000  # number of stocks in the cross-section (n)
 N_INDUSTRIES: int = 10  # number of industries (G)
-TRUE_PREMIUM: float = 0.4  # return (in %) per unit of score, holding industry and beta fixed
 MAD_TO_STD: float = 1.4826  # makes the MAD a consistent estimator of the std. dev. under normality
 
 
@@ -226,171 +222,109 @@ z_low_leverage: FloatArray = robust_zscore(-leverage)
 raw_signal: FloatArray = 0.5 * z_low_vol + 0.5 * z_low_leverage  # equally weighted combination
 ```
 
-### Step 2: regress the raw signal on industry dummies and betas
+### Step 2: the joint neutralization regression
 
-This is the neutralization regression $\mathbf{s} = D\boldsymbol{\gamma} + \mathbf{b}\,\delta + \boldsymbol{\varepsilon}$. Its residual is the pure signal.
+We regress the raw signal on the industry dummies and the betas, $\mathbf{s} = D\boldsymbol{\gamma} + \mathbf{b}\,\delta + \boldsymbol{\varepsilon}$, and keep the residual as the pure signal.
 
 ```{python}
 b: FloatArray = beta[:, None]  # beta as an (n, 1) column
-controls: FloatArray = np.hstack([D, b])  # X2 = [D, b], shape (n, G + 1); no intercept: the dummies sum to 1
+controls: FloatArray = np.hstack([D, b])  # [D, b], shape (n, G + 1); no intercept: the dummies sum to 1
 
 coef: FloatArray = ols(raw_signal, controls)  # [gamma_1, ..., gamma_G, delta]
 gamma_hat: FloatArray = coef[:N_INDUSTRIES]  # signal level attributable to each industry
-delta_hat: float = coef[-1]  # how much of the signal is explained by beta
+delta_joint: float = coef[-1]  # loading of the signal on beta
 pure_signal: FloatArray = raw_signal - controls @ coef  # residual = M_[D,b] s
 
-neutralization = pd.Series(
-    {
-        "Loading of the raw signal on beta (delta hat)": delta_hat,
-        "Range of industry levels (max - min of gamma hat)": np.ptp(gamma_hat),
-        "Correlation(raw signal, beta)": np.corrcoef(raw_signal, beta)[0, 1],
-        "Correlation(pure signal, beta)": np.corrcoef(pure_signal, beta)[0, 1],
-        "Largest |sum of pure signal within an industry|": np.abs(D.T @ pure_signal).max(),
-        "Sum of pure signal x beta (b's)": beta @ pure_signal,
-    },
-    name="Value",
-)
-(neutralization.round(3) + 0.0).to_frame().style.format("{:.3f}")  # "+ 0.0" turns -0.000 into 0.000
+print(f"Beta loading of the raw signal: delta = {delta_joint:.3f}")
+print(f"Industry levels (gamma): from {gamma_hat.min():.2f} to {gamma_hat.max():.2f}")
 ```
 
-As expected for a low-risk signal, the raw score loads negatively on beta, and its average level differs a lot across industries. The pure signal has neither exposure: it sums to zero within every industry and has zero covariance with beta.
+As expected for a low-risk signal, the raw score loads negatively on beta, and its level differs a lot across industries.
 
-### Step 3: one month of returns
+### Step 3: neutralizing step by step
 
-The true model gives the signal a premium of `{python} TRUE_PREMIUM`% per unit of score, holding industry and beta fixed. Returns also load on industries and on the market. The month is deliberately unfavourable to the raw signal: the market rallies strongly (which hurts a signal that favours low-beta stocks), and defensive industries lag.
-
-```{python}
-industry_return: FloatArray = (  # this month's industry returns, beyond the market
-    2.0 * (industry_beta - 1.0)  # defensive (low-beta) industries lag...
-    + rng.normal(0.0, 1.5, N_INDUSTRIES)  # ...plus other industry news
-)
-market_return: float = 6.0  # a strong market rally: high-beta stocks win
-returns: FloatArray = (
-    industry_return[industry]  # industry component
-    + beta * market_return  # market component, proportional to beta
-    + TRUE_PREMIUM * raw_signal  # the premium we want to estimate
-    + rng.normal(0.0, 3.0, N_STOCKS)  # idiosyncratic noise
-)
-```
-
-### Step 4: estimating the premium
-
-We estimate the signal's premium in several ways.
+We now build the signal in the three sequential ways of the table above.
 
 ```{python}
 ones: FloatArray = np.ones((N_STOCKS, 1))  # intercept column
 
-# 0. No neutralization at all: simple regression of returns on the raw signal.
-lambda_raw: float = ols(returns, np.column_stack([ones, raw_signal]))[1]
-
-# 1. Joint regression: returns on [raw signal, industry dummies, beta]. The first coefficient is the signal's.
-lambda_joint: float = ols(returns, np.column_stack([raw_signal, controls]))[0]
-
-# 2. FWL: regress the raw returns on the pure signal from step 2.
-lambda_fwl: float = ols(returns, pure_signal[:, None])[0]
-
-# 3. FWL, neutralizing the returns too: same coefficient (and same residuals as regression 1).
-returns_neutral: FloatArray = residualize(returns, controls)
-lambda_fwl_both: float = ols(returns_neutral, pure_signal[:, None])[0]
-
-# 4. Correct sequential neutralization: first against industries, then against the
-#    *industry-neutralized* beta.
+# Step 1, common to all versions: neutralize the signal and the beta against the industries
 signal_ind_neutral: FloatArray = residualize(raw_signal, D)  # M_D s
 beta_ind_neutral: FloatArray = residualize(beta, D)  # M_D b
-signal_seq_ok: FloatArray = residualize(signal_ind_neutral, beta_ind_neutral[:, None])
-lambda_seq_ok: float = ols(returns, signal_seq_ok[:, None])[0]
 
-# 5. Naive sequential neutralization: first against industries, then against the *raw* beta.
-signal_seq_naive: FloatArray = residualize(signal_ind_neutral, np.hstack([ones, b]))
-lambda_seq_naive: float = ols(returns, np.column_stack([ones, signal_seq_naive]))[1]
+# (a) FWL: industry-neutralized signal on industry-neutralized beta -> should be the pure signal
+delta_fwl: float = ols(signal_ind_neutral, beta_ind_neutral[:, None])[0]
+signal_fwl: FloatArray = signal_ind_neutral - delta_fwl * beta_ind_neutral
 
-# 6. Neutralizing only the returns, and regressing them on the raw signal.
-lambda_returns_only: float = ols(returns_neutral, np.column_stack([ones, raw_signal]))[1]
+# (b) Raw signal on industry-neutralized beta -> right loading, but the residual keeps the industry part
+delta_raw_on_neutral: float = ols(raw_signal, beta_ind_neutral[:, None])[0]
+signal_raw_on_neutral: FloatArray = raw_signal - delta_raw_on_neutral * beta_ind_neutral
 
-estimates = pd.Series(
-    {
-        "0. Raw signal, no controls": lambda_raw,
-        "1. Joint regression on [s, D, b]": lambda_joint,
-        "2. FWL: returns on pure signal": lambda_fwl,
-        "3. FWL: neutralized returns on pure signal": lambda_fwl_both,
-        "4. Sequential, step 2 on industry-neutralized beta": lambda_seq_ok,
-        "5. Sequential, step 2 on raw beta (naive)": lambda_seq_naive,
-        "6. Neutralized returns on raw signal": lambda_returns_only,
-    },
-    name="Estimated premium (%)",
-)
-estimates.to_frame().style.format("{:.4f}")
+# (c) Naive: industry-neutralized signal on the *raw* beta (with an intercept)
+naive_coef: FloatArray = ols(signal_ind_neutral, np.hstack([ones, b]))  # [intercept, delta]
+delta_naive: float = naive_coef[1]
+signal_naive: FloatArray = signal_ind_neutral - np.hstack([ones, b]) @ naive_coef
 ```
 
-```{python}
-# Regressions 1-4 must agree to machine precision
-assert np.allclose([lambda_fwl, lambda_fwl_both, lambda_seq_ok], lambda_joint)
-
-# The residuals of regression 3 are the residuals of the full regression 1
-X_full: FloatArray = np.column_stack([raw_signal, controls])
-full_residuals: FloatArray = returns - X_full @ ols(returns, X_full)
-fwl_residuals: FloatArray = returns_neutral - pure_signal * lambda_fwl_both
-assert np.allclose(full_residuals, fwl_residuals)
-print("FWL checks passed: identical coefficients (1-4) and identical residuals (1 vs 3).")
-```
-
-Regressions 1 to 4 agree to the last digit, as the theorem requires, and they recover the true premium of `{python} TRUE_PREMIUM`% up to estimation noise. The others do not:
-
-- **The raw regression (0) gets the sign wrong.** The raw signal is short beta and long defensive industries, and in a strong rally both bets lose. Its "premium" is mostly these bets.
-- **Neutralizing only the returns (6) is also wrong.** The raw signal still contains its industry and beta components, which are pure noise with respect to the neutralized returns, and they pull the coefficient towards zero.
-- **The naive sequential version (5) is biased**, because its signal still carries industry bets. The size and direction of the error depend on how industries performed, so it changes from month to month.
-
-The portfolio view makes this concrete. For each version of the signal $\mathbf{v}$, form the portfolio $\mathbf{w} = \mathbf{v} / (\mathbf{v}^\top\mathbf{s})$, scaled to have unit exposure to the raw signal, and measure its exposures:
+For every version of the signal, we measure its beta loading, its remaining exposures, and how far it is from the pure signal of the joint regression:
 
 ```{python}
-def exposures(v: FloatArray) -> pd.Series:
-    """Exposures of the portfolio w = v / (v's), which has unit exposure to the raw signal s."""
-    v = v - v.mean()  # make every version dollar-neutral (long-short)
-    w: FloatArray = v / (v @ raw_signal)  # weights, scaled so that s'w = 1
-    industry_net: FloatArray = D.T @ w  # net weight in each industry, shape (G,)
+def diagnostics(v: FloatArray, delta: float | None) -> pd.Series:
+    """Exposures of a (neutralized) signal v, and its distance to the pure signal of the joint regression."""
+    industry_average: FloatArray = (D.T @ v) / D.sum(axis=0)  # average of v within each industry, shape (G,)
     return pd.Series(
         {
-            "Signal exposure s'w": w @ raw_signal,
-            "Beta exposure b'w": w @ beta,
-            "Largest |industry net weight|": np.abs(industry_net).max(),
+            "Beta loading (delta)": np.nan if delta is None else delta,
+            "Correlation with beta": np.corrcoef(v, beta)[0, 1],
+            "Largest |industry average|": np.abs(industry_average).max(),
+            "Max |gap to the pure signal|": np.abs(v - pure_signal).max(),
         }
     )
 
 
-exposure_table = pd.DataFrame(
+table = pd.DataFrame(
     {
-        "Raw signal": exposures(raw_signal),
-        "Industry-neutralized only": exposures(signal_ind_neutral),
-        "Sequential, naive (raw beta)": exposures(signal_seq_naive),
-        "Pure signal (joint or correct sequential)": exposures(pure_signal),
+        "Raw signal": diagnostics(raw_signal, None),
+        "Industry-neutralized only": diagnostics(signal_ind_neutral, None),
+        "Joint: s on [D, b]": diagnostics(pure_signal, delta_joint),
+        "(a) FWL: M_D s on M_D b": diagnostics(signal_fwl, delta_fwl),
+        "(b) Raw s on M_D b": diagnostics(signal_raw_on_neutral, delta_raw_on_neutral),
+        "(c) Naive: M_D s on raw b": diagnostics(signal_naive, delta_naive),
     }
 ).T
-(exposure_table.round(3) + 0.0).style.format("{:.3f}")  # "+ 0.0" turns -0.000 (rounding noise) into 0.000
+(table.round(3) + 0.0).style.format("{:.3f}", na_rep="–")  # "+ 0.0" turns -0.000 (rounding noise) into 0.000
 ```
 
-- **Raw signal:** a large negative beta and large industry exposures. Its "performance" is mostly a bet against the market and in favour of defensive industries.
-- **Industry-neutralized only:** no industry bets, but still short beta, since low-risk stocks are low-beta stocks even within an industry.
-- **Naive sequential:** beta-neutral, but industry exposures are back. Removing the raw beta re-introduced industry tilts.
-- **Pure signal:** zero beta and zero net weight in every industry, with unit signal exposure: the pure factor portfolio.
+```{python}
+# FWL, part 1: the beta loading is the same in the joint regression, (a) and (b)
+assert np.isclose(delta_fwl, delta_joint) and np.isclose(delta_raw_on_neutral, delta_joint)
 
-## Standard errors after a two-step regression
+# FWL, part 2: the two-step residual (a) is exactly the pure signal of the joint regression
+assert np.allclose(signal_fwl, pure_signal)
 
-FWL guarantees identical **coefficients** and, when both sides are neutralized, identical **residuals**. It does not guarantee identical standard errors from software. If you regress the neutralized returns on the pure signal by hand, the program thinks it estimated $k_1$ parameters, not $k_1 + k_2$, so it divides the (identical) sum of squared residuals by $n - k_1$ instead of $n - k_1 - k_2$. The classical standard errors are therefore too small by a factor of $\sqrt{(n-k_1-k_2)/(n-k_1)}$. If instead you regress the *raw* returns on the pure signal, the residuals still contain everything the controls explain, and the standard errors are too large.
+# The pure signal is industry-neutral and beta-neutral
+assert np.allclose(D.T @ pure_signal, 0.0) and np.isclose(beta @ pure_signal, 0.0)
+print("FWL checks passed: same beta loading for joint, (a) and (b); (a) is exactly the pure signal.")
+```
 
-With 3,000 stocks and 11 controls this is negligible (about 0.2%). With a small universe, many industries, or many periods in a panel with fixed effects, it is not. The fix is either to correct the degrees of freedom, or to run the joint regression when you need inference. In a Fama–MacBeth setup the issue disappears: inference comes from the time series of the monthly coefficients, not from the cross-sectional standard errors.
+The table confirms each claim:
+
+- **Raw signal:** negatively correlated with beta and with large industry averages. A portfolio built on it is mostly short the market and long defensive industries.
+- **Industry-neutralized only:** no industry bets, but still negatively correlated with beta, since low-risk stocks are low-beta stocks even within an industry.
+- **Joint regression and (a) FWL:** the same beta loading and the same residual, to machine precision. The pure signal has zero correlation with beta and zero average in every industry.
+- **(b) Raw signal on the industry-neutralized beta:** the beta loading is right, but the residual still carries the industry levels of the raw signal.
+- **(c) Naive:** the beta loading is wrong, and although the signal is now uncorrelated with beta, industry averages have reappeared: removing the raw beta re-introduced industry tilts.
 
 ## Takeaways
 
-- **FWL:** the coefficient on $X_1$ in a regression with controls $X_2$ equals the slope from regressing $\mathbf{y}$ (or $M_2\mathbf{y}$) on $M_2X_1$, the part of $X_1$ that the controls cannot explain.
-- **The pure signal is a regression residual:** regress the raw signal cross-sectionally on industry dummies and betas, and keep the residual. It sums to zero within every industry and is uncorrelated with beta.
-- **Regressing returns on the pure signal** gives exactly the coefficient of the joint regression of returns on the raw signal, the industry dummies and the betas.
-- **Neutralize the signal, not only the returns.** Neutralizing the returns alone does not remove the signal's industry and beta exposures, and gives a different coefficient.
-- **Sequential neutralization must use neutralized controls:** after neutralizing industries, regress on the industry-neutralized beta, not the raw beta. Otherwise beta neutrality breaks industry neutrality. When in doubt, neutralize against all controls in one regression.
-- **The coefficient is a portfolio return:** that of the minimum-norm portfolio with unit signal exposure, zero beta and zero net weight in every industry. This is why Fama–MacBeth coefficients can be read as the returns of pure long–short factor portfolios.
+- **FWL:** the coefficient on $X_1$ in a regression with controls $X_2$ equals the slope from regressing $M_2\mathbf{y}$ (or $\mathbf{y}$) on $M_2X_1$, and the residuals from regressing $M_2\mathbf{y}$ on $M_2X_1$ are those of the full regression.
+- **The pure signal is a regression residual:** regress the raw signal cross-sectionally on industry dummies and betas and keep the residual. It sums to zero within every industry and is uncorrelated with beta.
+- **The beta loading of a signal is a within-industry quantity:** in the joint regression, $\widehat{\delta}$ is the slope of the industry-neutralized signal on the industry-neutralized beta.
+- **Sequential neutralization works if every step is neutralized:** industry-neutralize the signal *and* the beta, then regress one on the other. The residual is exactly the pure signal.
+- **Two classic mistakes:** regressing the raw signal on the neutralized beta (right loading, wrong residual), and regressing the industry-neutralized signal on the raw beta (wrong loading, and industry tilts come back). When in doubt, neutralize against all controls in one regression.
 
 ## References
 
 - Frisch, R., & Waugh, F. V. (1933). Partial Time Regressions as Compared with Individual Trends. *Econometrica*, 1(4), 387–401.
 - Lovell, M. C. (1963). Seasonal Adjustment of Economic Time Series and Multiple Regression Analysis. *Journal of the American Statistical Association*, 58(304), 993–1010.
-- Fama, E. F., & MacBeth, J. D. (1973). Risk, Return, and Equilibrium: Empirical Tests. *Journal of Political Economy*, 81(3), 607–636.
 - Grinold, R. C., & Kahn, R. N. (2000). *Active Portfolio Management* (2nd ed.). McGraw-Hill.
