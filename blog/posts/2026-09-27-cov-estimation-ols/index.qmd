@@ -266,32 +266,70 @@ Again, the coefficients are identical to OLS; only their estimated covariance ch
 
 Theory is nice, but how bad is the problem in practice? The cleanest test is a Monte Carlo experiment where the **true slope is zero**. A correct 5% test should then reject $H_0: \beta_1 = 0$ in about 5% of samples. If it rejects much more often, the standard errors are too small and we are finding "significant" effects that do not exist.
 
+The code is organised in three steps: a generic function that runs the experiment for any data-generating process (DGP), one function per scenario that simulates a dataset, and a final table.
+
 ```{python}
-#| code-fold: true
-#| code-summary: "Setup and helper function"
+#| code-fold: show
+#| code-summary: "Setup: types, parameters and helper functions"
+from collections.abc import Callable, Mapping
+from typing import Any, TypeAlias
+
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 import statsmodels.api as sm
+from statsmodels.regression.linear_model import RegressionResultsWrapper
 
-rng = np.random.default_rng(42)
-N_SIMS, N_OBS, ALPHA = 2_000, 200, 0.05
+# --- Type aliases: names for the objects we manipulate -------------------------------
+FloatArray: TypeAlias = npt.NDArray[np.float64]  # array of floats, e.g. n observations of x
+Sample: TypeAlias = tuple[FloatArray, FloatArray]  # one simulated dataset (x, y), each of shape (n,)
+Simulator: TypeAlias = Callable[[], Sample]  # function drawing a *new* dataset at each call
+FitOptions: TypeAlias = dict[str, Any]  # keyword arguments of sm.OLS(...).fit(), e.g. {"cov_type": "HC3"}
+
+# --- Simulation parameters -------------------------------------------------------------
+rng: np.random.Generator = np.random.default_rng(42)  # fixed seed -> reproducible results
+N_SIMS: int = 2_000  # number of simulated samples per scenario
+N_OBS: int = 200  # number of observations in each sample (n)
+ALPHA: float = 0.05  # significance level of the t-test
 
 
-def rejection_rates(simulate, fits):
-    """Share of simulations in which H0: beta_1 = 0 is rejected, for each covariance estimator."""
-    rejections = {name: 0 for name in fits}
+def rejection_rates(simulate: Simulator, estimators: Mapping[str, FitOptions]) -> pd.Series:
+    """Monte Carlo estimate of the probability of rejecting H0: beta_1 = 0.
+
+    `simulate` generates data with a true slope of zero, so every rejection is a
+    false positive: a well-behaved 5% test should reject in about 5% of samples.
+
+    `estimators` maps a display name to the options passed to `.fit()`, which select
+    the covariance estimator: {} is the classical formula, {"cov_type": "HC3"} is
+    White-type robust, {"cov_type": "HAC", ...} is Newey-West.
+
+    Returns a Series indexed by estimator name, containing the share of the N_SIMS
+    samples in which the p-value of the slope is below ALPHA.
+    """
+    rejections: dict[str, int] = {name: 0 for name in estimators}  # counters of false positives
+
     for _ in range(N_SIMS):
-        x, y = simulate()
-        X = sm.add_constant(x)
-        for name, fit_kwargs in fits.items():
-            res = sm.OLS(y, X).fit(**fit_kwargs)
-            rejections[name] += res.pvalues[1] < ALPHA
+        x, y = simulate()  # a fresh sample: x and y have shape (N_OBS,)
+        X: FloatArray = sm.add_constant(x)  # design matrix [1, x], shape (N_OBS, 2)
+
+        for name, fit_options in estimators.items():
+            # Same data and same OLS coefficients for every estimator: only the covariance
+            # matrix changes, hence the standard errors, t-statistics and p-values.
+            results: RegressionResultsWrapper = sm.OLS(y, X).fit(**fit_options)
+            p_value_slope: float = results.pvalues[1]  # index 0 = constant, index 1 = slope
+            rejections[name] += int(p_value_slope < ALPHA)
+
     return pd.Series({name: count / N_SIMS for name, count in rejections.items()})
 
 
-def ar1(n, rho, rng):
-    """Stationary AR(1) process with unit-variance innovations."""
-    z = np.empty(n)
+def ar1(n: int, rho: float, rng: np.random.Generator) -> FloatArray:
+    """Simulate a stationary AR(1) process z_t = rho * z_{t-1} + e_t, with e_t ~ N(0, 1).
+
+    The first value is drawn from the stationary distribution N(0, 1 / (1 - rho^2)),
+    so no burn-in period is needed: the series has the same variance at every date.
+    The closer `rho` is to 1, the more persistent (slowly moving) the series.
+    """
+    z: FloatArray = np.empty(n)
     z[0] = rng.standard_normal() / np.sqrt(1 - rho**2)
     for t in range(1, n):
         z[t] = rho * z[t - 1] + rng.standard_normal()
@@ -301,44 +339,58 @@ def ar1(n, rho, rng):
 **Scenario 1: heteroskedasticity.** The error standard deviation grows with $|x_i|$, so the noisiest observations are exactly those with the most leverage on the slope: $y_i = 0 \cdot x_i + |x_i|\, u_i$.
 
 ```{python}
-def heteroskedastic():
-    x = rng.standard_normal(N_OBS)
-    y = np.abs(x) * rng.standard_normal(N_OBS)  # true slope = 0
+def heteroskedastic() -> Sample:
+    """Cross-section with y_i = 0 * x_i + |x_i| * u_i, i.e. Var(eps_i | x_i) = x_i^2."""
+    x: FloatArray = rng.standard_normal(N_OBS)  # regressor, x_i ~ N(0, 1)
+    u: FloatArray = rng.standard_normal(N_OBS)  # standardized noise, u_i ~ N(0, 1)
+    y: FloatArray = np.abs(x) * u  # true slope = 0, but the error variance depends on x
     return x, y
 
-hetero = rejection_rates(
-    heteroskedastic,
-    {"Classical (nonrobust)": {}, "HC0": {"cov_type": "HC0"}, "HC3": {"cov_type": "HC3"}},
-)
+
+# Covariance estimators compared in this scenario (display name -> options of .fit())
+hetero_estimators: dict[str, FitOptions] = {
+    "Classical (nonrobust)": {},  # sigma^2 (X'X)^-1, the statsmodels default
+    "HC0": {"cov_type": "HC0"},  # White (1980)
+    "HC3": {"cov_type": "HC3"},  # small-sample correction based on leverage
+}
+hetero: pd.Series = rejection_rates(heteroskedastic, hetero_estimators)
 ```
 
 **Scenario 2: serial correlation.** Both the regressor and the errors are persistent AR(1) processes with $\rho = 0.9$, a typical situation for predictive regressions with valuation ratios or interest rates: $y_t = 0 \cdot x_t + \varepsilon_t$.
 
 ```{python}
-L_RULE = int(np.floor(4 * (N_OBS / 100) ** (2 / 9)))  # rule-of-thumb lag = 4 for n = 200
+RHO: float = 0.9  # persistence of both the regressor and the errors
+L_RULE: int = int(np.floor(4 * (N_OBS / 100) ** (2 / 9)))  # Newey-West rule-of-thumb lag: 4 for n = 200
 
-def serially_correlated():
-    x = ar1(N_OBS, 0.9, rng)
-    y = ar1(N_OBS, 0.9, rng)  # true slope = 0
+
+def serially_correlated() -> Sample:
+    """Time series with y_t = 0 * x_t + eps_t, where x_t and eps_t are independent AR(1)."""
+    x: FloatArray = ar1(N_OBS, RHO, rng)  # persistent regressor
+    y: FloatArray = ar1(N_OBS, RHO, rng)  # y = eps: true slope = 0, but errors are autocorrelated
     return x, y
 
-serial = rejection_rates(
-    serially_correlated,
-    {
-        "Classical (nonrobust)": {},
-        "HC3": {"cov_type": "HC3"},
-        f"HAC, L = {L_RULE} (rule of thumb)": {"cov_type": "HAC", "cov_kwds": {"maxlags": L_RULE}},
-        "HAC, L = 20": {"cov_type": "HAC", "cov_kwds": {"maxlags": 20}},
-    },
-)
+
+# For HAC, `maxlags` is the lag L of the Newey-West formula (Bartlett weights are the default kernel)
+serial_estimators: dict[str, FitOptions] = {
+    "Classical (nonrobust)": {},
+    "HC3": {"cov_type": "HC3"},  # robust to heteroskedasticity only
+    f"HAC, L = {L_RULE} (rule of thumb)": {"cov_type": "HAC", "cov_kwds": {"maxlags": L_RULE}},
+    "HAC, L = 20": {"cov_type": "HAC", "cov_kwds": {"maxlags": 20}},  # more lags
+}
+serial: pd.Series = rejection_rates(serially_correlated, serial_estimators)
 ```
 
 ```{python}
 #| label: tbl-rejections
 #| tbl-cap: "Share of 2,000 simulated samples (n = 200) in which the true null β₁ = 0 is rejected at the 5% level. A correct test should be close to 5%."
-table = pd.concat({"Heteroskedasticity": hetero, "Serial correlation": serial}).rename("Rejection rate").to_frame()
+# Stack both scenarios into one table with a two-level index: (scenario, standard errors)
+table: pd.DataFrame = (
+    pd.concat({"Heteroskedasticity": hetero, "Serial correlation": serial})
+    .rename("Rejection rate")
+    .to_frame()
+)
 table.index.names = ["Scenario", "Standard errors"]
-table.style.format("{:.1%}")
+table.style.format("{:.1%}")  # display as percentages, e.g. 0.052 -> 5.2%
 ```
 
 Three lessons stand out:
