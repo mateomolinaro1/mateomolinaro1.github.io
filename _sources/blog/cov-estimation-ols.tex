@@ -1,0 +1,977 @@
+
+\subsubsection*{Correct Specification of the Error Covariance Matrix}
+
+The OLS regression summary produced by \texttt{statsmodels} may contain the
+following note:
+
+\begin{quote}
+\texttt{[1] Standard Errors assume that the covariance matrix of the errors
+is correctly specified.}
+\end{quote}
+
+This note concerns the validity of the \textbf{standard errors} and,
+consequently, the validity of the \(t\)-statistics, \(p\)-values, and
+confidence intervals reported by the regression.
+
+It does not, by itself, mean that \texttt{statsmodels} has detected a problem.
+Rather, it reminds us that statistical inference depends on the covariance
+structure assumed for the regression errors.
+
+
+% ============================================================
+% OLS MODEL
+% ============================================================
+
+\subsubsection*{The Classical OLS Error Covariance Assumption}
+
+Consider the linear regression model
+
+\[
+\boxed{
+\mathbf{y}
+=
+X\boldsymbol{\beta}
++
+\boldsymbol{\varepsilon},
+}
+\]
+
+where
+
+\[
+\mathbf{y}\in\mathbb{R}^{n},
+\qquad
+X\in\mathbb{R}^{n\times k},
+\qquad
+\boldsymbol{\beta}\in\mathbb{R}^{k},
+\qquad
+\boldsymbol{\varepsilon}\in\mathbb{R}^{n}.
+\]
+
+The error vector is
+
+\[
+\boldsymbol{\varepsilon}
+=
+\begin{pmatrix}
+\varepsilon_1\\
+\varepsilon_2\\
+\vdots\\
+\varepsilon_n
+\end{pmatrix}.
+\]
+
+With the default
+
+\begin{verbatim}
+Covariance Type: nonrobust
+\end{verbatim}
+
+the classical OLS covariance assumption is
+
+\[
+\boxed{
+\operatorname{Var}
+\left(
+\boldsymbol{\varepsilon}\mid X
+\right)
+=
+\sigma^2 I_n.
+}
+\]
+
+Explicitly,
+
+\[
+\sigma^2 I_n
+=
+\begin{pmatrix}
+\sigma^2 & 0 & \cdots & 0\\
+0 & \sigma^2 & \cdots & 0\\
+\vdots & \vdots & \ddots & \vdots\\
+0 & 0 & \cdots & \sigma^2
+\end{pmatrix}.
+\]
+
+This assumption contains two important components.
+
+
+% ============================================================
+% HOMOSKEDASTICITY
+% ============================================================
+
+\paragraph{1. Homoskedasticity}
+
+All observations are assumed to have the same conditional error variance:
+
+\[
+\boxed{
+\operatorname{Var}
+\left(
+\varepsilon_i\mid X
+\right)
+=
+\sigma^2
+\qquad
+\forall i.
+}
+\]
+
+Thus, the magnitude of the error variance does not systematically change
+across observations.
+
+
+% ============================================================
+% NO ERROR CORRELATION
+% ============================================================
+
+\paragraph{2. No Correlation Between Errors}
+
+For two different observations,
+
+\[
+i\neq j,
+\]
+
+the errors are assumed to be conditionally uncorrelated:
+
+\[
+\boxed{
+\operatorname{Cov}
+\left(
+\varepsilon_i,\varepsilon_j\mid X
+\right)
+=
+0.
+}
+\]
+
+For time-series data, this assumption implies, in particular, the absence of
+serial correlation such as
+
+\[
+\operatorname{Cov}
+\left(
+\varepsilon_t,\varepsilon_{t-1}\mid X
+\right)
+=
+0.
+\]
+
+Therefore,
+
+\[
+\boxed{
+\operatorname{Var}
+(\boldsymbol{\varepsilon}\mid X)
+=
+\sigma^2I_n
+}
+\]
+
+combines constant error variance and zero covariance between different
+errors.
+
+
+% ============================================================
+% OLS ESTIMATOR
+% ============================================================
+
+\subsubsection*{OLS Estimator}
+
+The OLS estimator is
+
+\[
+\boxed{
+\widehat{\boldsymbol{\beta}}
+=
+(X^\top X)^{-1}X^\top\mathbf{y}.
+}
+\]
+
+Substituting
+
+\[
+\mathbf{y}
+=
+X\boldsymbol{\beta}
++
+\boldsymbol{\varepsilon},
+\]
+
+we obtain
+
+\[
+\begin{aligned}
+\widehat{\boldsymbol{\beta}}
+&=
+(X^\top X)^{-1}
+X^\top
+\left(
+X\boldsymbol{\beta}
++
+\boldsymbol{\varepsilon}
+\right)
+\\
+&=
+(X^\top X)^{-1}X^\top X\boldsymbol{\beta}
++
+(X^\top X)^{-1}X^\top\boldsymbol{\varepsilon}
+\\
+&=
+\boldsymbol{\beta}
++
+(X^\top X)^{-1}X^\top\boldsymbol{\varepsilon}.
+\end{aligned}
+\]
+
+Hence,
+
+\[
+\boxed{
+\widehat{\boldsymbol{\beta}}
+-
+\boldsymbol{\beta}
+=
+(X^\top X)^{-1}
+X^\top
+\boldsymbol{\varepsilon}.
+}
+\]
+
+
+% ============================================================
+% COVARIANCE OF OLS
+% ============================================================
+
+\subsubsection*{Covariance Matrix of the OLS Estimator}
+
+Conditional on \(X\),
+
+\[
+\operatorname{Var}
+\left(
+\widehat{\boldsymbol{\beta}}\mid X
+\right)
+=
+\operatorname{Var}
+\left[
+(X^\top X)^{-1}
+X^\top
+\boldsymbol{\varepsilon}
+\mid X
+\right].
+\]
+
+Using the general rule
+
+\[
+\operatorname{Var}(A\mathbf{x})
+=
+A\operatorname{Var}(\mathbf{x})A^\top,
+\]
+
+we obtain
+
+\[
+\boxed{
+\operatorname{Var}
+\left(
+\widehat{\boldsymbol{\beta}}\mid X
+\right)
+=
+(X^\top X)^{-1}
+X^\top
+\operatorname{Var}
+(\boldsymbol{\varepsilon}\mid X)
+X
+(X^\top X)^{-1}.
+}
+\]
+
+This is the \textbf{general expression} for the covariance matrix of the OLS
+estimator.
+
+
+% ============================================================
+% CLASSICAL CASE
+% ============================================================
+
+\subsubsection*{Classical Homoskedastic Case}
+
+Under the classical assumption,
+
+\[
+\operatorname{Var}
+(\boldsymbol{\varepsilon}\mid X)
+=
+\sigma^2I_n.
+\]
+
+Substituting into the general formula gives
+
+\[
+\begin{aligned}
+\operatorname{Var}
+\left(
+\widehat{\boldsymbol{\beta}}\mid X
+\right)
+&=
+(X^\top X)^{-1}
+X^\top
+(\sigma^2I_n)
+X
+(X^\top X)^{-1}
+\\
+&=
+\sigma^2
+(X^\top X)^{-1}
+X^\top X
+(X^\top X)^{-1}
+\\
+&=
+\boxed{
+\sigma^2
+(X^\top X)^{-1}.
+}
+\end{aligned}
+\]
+
+Since the true error variance \(\sigma^2\) is unknown, it must be estimated.
+
+The usual estimator is
+
+\[
+\boxed{
+\widehat{\sigma}^2
+=
+\frac{
+\sum_{i=1}^{n}
+\widehat{\varepsilon}_i^2
+}{
+n-k
+}.
+}
+\]
+
+The classical estimated covariance matrix is therefore
+
+\[
+\boxed{
+\widehat{\operatorname{Var}}
+\left(
+\widehat{\boldsymbol{\beta}}
+\right)
+=
+\widehat{\sigma}^2
+(X^\top X)^{-1}.
+}
+\]
+
+
+% ============================================================
+% STANDARD ERRORS
+% ============================================================
+
+\subsubsection*{From the Covariance Matrix to Standard Errors}
+
+The diagonal elements of
+
+\[
+\widehat{\operatorname{Var}}
+\left(
+\widehat{\boldsymbol{\beta}}
+\right)
+\]
+
+are the estimated variances of the individual coefficient estimators.
+
+For coefficient \(j\),
+
+\[
+\boxed{
+\widehat{\operatorname{Var}}
+(\widehat{\beta}_j)
+=
+\left[
+\widehat{\operatorname{Var}}
+(\widehat{\boldsymbol{\beta}})
+\right]_{jj}.
+}
+\]
+
+The corresponding standard error is
+
+\[
+\boxed{
+SE(\widehat{\beta}_j)
+=
+\sqrt{
+\left[
+\widehat{\operatorname{Var}}
+(\widehat{\boldsymbol{\beta}})
+\right]_{jj}
+}.
+}
+\]
+
+The standard error is then used to construct the \(t\)-statistic:
+
+\[
+\boxed{
+t_j
+=
+\frac{
+\widehat{\beta}_j-\beta_{j,0}
+}{
+SE(\widehat{\beta}_j)
+}.
+}
+\]
+
+For the usual null hypothesis
+
+\[
+H_0:\beta_j=0,
+\]
+
+this becomes
+
+\[
+\boxed{
+t_j
+=
+\frac{
+\widehat{\beta}_j
+}{
+SE(\widehat{\beta}_j)
+}.
+}
+\]
+
+The \(t\)-statistic is subsequently used to compute the \(p\)-value and
+confidence interval.
+
+Therefore, there is a direct chain:
+
+\[
+\boxed{
+\text{error covariance assumption}
+\longrightarrow
+\widehat{\operatorname{Var}}(\widehat{\boldsymbol{\beta}})
+\longrightarrow
+SE(\widehat{\beta}_j)
+\longrightarrow
+t_j
+\longrightarrow
+p\text{-value and confidence interval}.
+}
+\]
+
+
+% ============================================================
+% MISSPECIFIED COVARIANCE
+% ============================================================
+
+\subsubsection*{What Happens if the Error Covariance Is Misspecified?}
+
+Suppose that the classical assumption
+
+\[
+\operatorname{Var}
+(\boldsymbol{\varepsilon}\mid X)
+=
+\sigma^2I_n
+\]
+
+is incorrect.
+
+More generally, suppose
+
+\[
+\boxed{
+\operatorname{Var}
+(\boldsymbol{\varepsilon}\mid X)
+=
+\Omega,
+}
+\]
+
+where
+
+\[
+\Omega
+\neq
+\sigma^2I_n.
+\]
+
+Then the correct covariance matrix of the OLS estimator is
+
+\[
+\boxed{
+\operatorname{Var}
+\left(
+\widehat{\boldsymbol{\beta}}\mid X
+\right)
+=
+(X^\top X)^{-1}
+X^\top
+\Omega
+X
+(X^\top X)^{-1}.
+}
+\]
+
+Consequently, the classical formula
+
+\[
+\widehat{\sigma}^2(X^\top X)^{-1}
+\]
+
+is generally no longer an appropriate estimator of the covariance matrix.
+
+
+% ============================================================
+% HETEROSKEDASTICITY
+% ============================================================
+
+\paragraph{Example: Heteroskedasticity}
+
+Suppose that
+
+\[
+\operatorname{Var}
+(\varepsilon_i\mid X)
+=
+\sigma_i^2,
+\]
+
+so that the error variance differs across observations.
+
+Then
+
+\[
+\Omega
+=
+\begin{pmatrix}
+\sigma_1^2 & 0 & \cdots & 0\\
+0 & \sigma_2^2 & \cdots & 0\\
+\vdots & \vdots & \ddots & \vdots\\
+0 & 0 & \cdots & \sigma_n^2
+\end{pmatrix}.
+\]
+
+Unless
+
+\[
+\sigma_1^2
+=
+\sigma_2^2
+=
+\cdots
+=
+\sigma_n^2,
+\]
+
+we have
+
+\[
+\Omega
+\neq
+\sigma^2I_n.
+\]
+
+Therefore, the conventional nonrobust OLS standard errors may be incorrect.
+
+
+% ============================================================
+% SERIAL CORRELATION
+% ============================================================
+
+\paragraph{Example: Serial Correlation}
+
+For time-series data, errors may also be correlated over time:
+
+\[
+\operatorname{Cov}
+(\varepsilon_t,\varepsilon_{t-h}\mid X)
+\neq0.
+\]
+
+In that case, \(\Omega\) contains non-zero off-diagonal elements:
+
+\[
+\Omega
+=
+\begin{pmatrix}
+\sigma_1^2
+&
+\operatorname{Cov}(\varepsilon_1,\varepsilon_2)
+&
+\cdots
+\\
+\operatorname{Cov}(\varepsilon_2,\varepsilon_1)
+&
+\sigma_2^2
+&
+\cdots
+\\
+\vdots
+&
+\vdots
+&
+\ddots
+\end{pmatrix}.
+\]
+
+Again,
+
+\[
+\Omega
+\neq
+\sigma^2I_n,
+\]
+
+so the classical covariance estimator may be inappropriate.
+
+
+% ============================================================
+% COEFFICIENTS VS INFERENCE
+% ============================================================
+
+\subsubsection*{Coefficient Estimation versus Statistical Inference}
+
+A crucial distinction must be made between the OLS coefficient estimates and
+their estimated standard errors.
+
+Under the exogeneity assumption
+
+\[
+\boxed{
+\mathbb{E}
+[
+\boldsymbol{\varepsilon}\mid X
+]
+=
+\mathbf{0},
+}
+\]
+
+we have
+
+\[
+\begin{aligned}
+\mathbb{E}
+[
+\widehat{\boldsymbol{\beta}}\mid X
+]
+&=
+\boldsymbol{\beta}
++
+(X^\top X)^{-1}
+X^\top
+\mathbb{E}
+[
+\boldsymbol{\varepsilon}\mid X
+]
+\\
+&=
+\boldsymbol{\beta}.
+\end{aligned}
+\]
+
+Therefore,
+
+\[
+\boxed{
+\mathbb{E}
+[
+\widehat{\boldsymbol{\beta}}\mid X
+]
+=
+\boldsymbol{\beta}.
+}
+\]
+
+Thus, heteroskedasticity or serial correlation does not, by itself,
+necessarily make the OLS coefficient estimator biased when the relevant
+exogeneity conditions hold.
+
+However, the conventional covariance estimator may be incorrect.
+
+Therefore,
+
+\[
+\boxed{
+\begin{array}{c}
+\text{incorrect covariance specification}
+\\
+\Downarrow
+\\
+\text{incorrect estimated coefficient variances}
+\\
+\Downarrow
+\\
+\text{incorrect standard errors}
+\\
+\Downarrow
+\\
+\text{incorrect }t\text{-statistics}
+\\
+\Downarrow
+\\
+\text{potentially incorrect }p\text{-values and confidence intervals}.
+\end{array}
+}
+\]
+
+For example, suppose
+
+\[
+\widehat{\beta}_j=0.10.
+\]
+
+With a classical standard error of
+
+\[
+SE_{\mathrm{classical}}
+(\widehat{\beta}_j)
+=
+0.04,
+\]
+
+we obtain
+
+\[
+t
+=
+\frac{0.10}{0.04}
+=
+2.5.
+\]
+
+This might suggest statistical significance.
+
+However, suppose a robust covariance estimator gives
+
+\[
+SE_{\mathrm{robust}}
+(\widehat{\beta}_j)
+=
+0.07.
+\]
+
+Then
+
+\[
+t_{\mathrm{robust}}
+=
+\frac{0.10}{0.07}
+\approx1.43.
+\]
+
+The estimated coefficient is unchanged:
+
+\[
+\boxed{
+\widehat{\beta}_j=0.10,
+}
+\]
+
+but the statistical inference changes because the estimated uncertainty
+around the coefficient has changed.
+
+
+% ============================================================
+% ROBUST STANDARD ERRORS
+% ============================================================
+
+\subsubsection*{Heteroskedasticity-Robust Standard Errors}
+
+If heteroskedasticity is suspected, one can use a
+heteroskedasticity-consistent covariance estimator.
+
+For example, in \texttt{statsmodels},
+
+\begin{verbatim}
+model = sm.OLS(y, X).fit(cov_type='HC3')
+\end{verbatim}
+
+uses HC3 robust standard errors.
+
+The OLS coefficient estimates remain the same:
+
+\[
+\boxed{
+\widehat{\boldsymbol{\beta}}_{\mathrm{HC3}}
+=
+\widehat{\boldsymbol{\beta}}_{\mathrm{OLS}},
+}
+\]
+
+but the estimated covariance matrix changes:
+
+\[
+\boxed{
+\widehat{\operatorname{Var}}
+_{\mathrm{HC3}}
+(\widehat{\boldsymbol{\beta}})
+\neq
+\widehat{\sigma}^2
+(X^\top X)^{-1}.
+}
+\]
+
+Consequently, the standard errors, \(t\)-statistics, \(p\)-values, and
+confidence intervals may change.
+
+
+% ============================================================
+% HAC / NEWEY WEST
+% ============================================================
+
+\subsubsection*{HAC / Newey--West Standard Errors}
+
+For time-series regressions, the residuals may exhibit both
+
+\[
+\boxed{
+\text{heteroskedasticity}
+}
+\]
+
+and
+
+\[
+\boxed{
+\text{serial correlation}.
+}
+\]
+
+In this situation, a Heteroskedasticity and Autocorrelation Consistent
+(HAC) covariance estimator, such as Newey--West, can be used.
+
+For example,
+
+\begin{verbatim}
+model = sm.OLS(y, X).fit(
+    cov_type='HAC',
+    cov_kwds={'maxlags': 5}
+)
+\end{verbatim}
+
+allows the estimated covariance matrix to be robust to both
+heteroskedasticity and autocorrelation up to the chosen lag structure.
+
+Again, the OLS coefficient estimates are unchanged, but their estimated
+covariance matrix changes.
+
+\subsubsection*{Alternative Least-Squares Estimators}
+
+In this section, we focus primarily on the estimation of linear regression
+models using \textbf{Ordinary Least Squares (OLS)}. However, other
+least-squares estimators can be used when the classical assumptions on the
+error covariance matrix are not appropriate.
+
+\paragraph{Ordinary Least Squares (OLS)}
+
+OLS assumes, in its classical covariance specification,
+
+\[
+\operatorname{Var}(\boldsymbol{\varepsilon}\mid X)
+=
+\sigma^2 I.
+\]
+
+It estimates the coefficients by minimizing the unweighted sum of squared
+residuals:
+
+\[
+\boxed{
+\widehat{\boldsymbol{\beta}}_{\mathrm{OLS}}
+=
+\arg\min_{\boldsymbol{\beta}}
+\sum_{i=1}^{n}
+\left(
+y_i-\mathbf{x}_i^\top\boldsymbol{\beta}
+\right)^2.
+}
+\]
+
+\paragraph{Weighted Least Squares (WLS)}
+
+WLS is useful when observations have different error variances
+(\textbf{heteroskedasticity}). Observations are assigned different weights:
+
+\[
+\boxed{
+\widehat{\boldsymbol{\beta}}_{\mathrm{WLS}}
+=
+\arg\min_{\boldsymbol{\beta}}
+\sum_{i=1}^{n}
+w_i
+\left(
+y_i-\mathbf{x}_i^\top\boldsymbol{\beta}
+\right)^2.
+}
+\]
+
+Typically, observations with higher error variance receive lower weights:
+
+\[
+w_i\propto\frac{1}{\sigma_i^2}.
+\]
+
+\paragraph{Generalized Least Squares (GLS)}
+
+GLS is the more general case in which
+
+\[
+\boxed{
+\operatorname{Var}(\boldsymbol{\varepsilon}\mid X)
+=
+\Omega,
+}
+\]
+
+where \(\Omega\) may contain both unequal variances and correlations between
+errors.
+
+GLS estimates
+
+\[
+\boxed{
+\widehat{\boldsymbol{\beta}}_{\mathrm{GLS}}
+=
+(X^\top\Omega^{-1}X)^{-1}
+X^\top\Omega^{-1}\mathbf{y}.
+}
+\]
+
+WLS can therefore be viewed as a special case of GLS in which \(\Omega\) is
+diagonal:
+
+\[
+\boxed{
+\Omega
+=
+\operatorname{diag}
+(\sigma_1^2,\ldots,\sigma_n^2).
+}
+\]
+
+Hence,
+
+\[
+\boxed{
+\text{OLS}
+\subset
+\text{WLS}
+\subset
+\text{GLS},
+}
+\]
+
+in the sense that OLS corresponds to equal error variances, WLS allows
+observation-specific variances, and GLS additionally allows a general
+covariance structure between errors.

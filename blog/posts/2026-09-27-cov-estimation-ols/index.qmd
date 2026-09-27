@@ -1,0 +1,396 @@
+---
+title: "What Does statsmodels Mean by a “Correctly Specified” Error Covariance Matrix?"
+description: "Every OLS summary in statsmodels ends with a warning about the covariance matrix of the errors. What it means, why it matters for standard errors and p-values, and how to fix it with robust (HC) and HAC / Newey–West standard errors."
+author: "Matéo Molinaro"
+date: 2026-09-27
+categories: [econometrics, OLS, python]
+jupyter: python3
+execute:
+  freeze: auto
+---
+
+If you have ever run a regression with `statsmodels`, you have seen this line at the bottom of the summary table:
+
+```
+Notes:
+[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
+```
+
+It is easy to ignore, and most people do. But it is not boilerplate: it tells you that **every standard error, $t$-statistic, $p$-value and confidence interval in the table rests on an assumption about the errors** that is very often false in finance, where returns exhibit volatility clustering and regressions often use overlapping or persistent data.
+
+The note does not mean that `statsmodels` detected a problem. It is a reminder that inference depends on the covariance structure assumed for the regression errors. In this post we derive exactly which assumption, what goes wrong when it fails, and how to fix it, and then check it all with a small simulation.
+
+## The model and the classical assumption
+
+Consider the linear regression model
+
+$$
+\mathbf{y} = X\boldsymbol{\beta} + \boldsymbol{\varepsilon},
+\qquad
+\mathbf{y}\in\mathbb{R}^{n},\quad
+X\in\mathbb{R}^{n\times k},\quad
+\boldsymbol{\beta}\in\mathbb{R}^{k},\quad
+\boldsymbol{\varepsilon}\in\mathbb{R}^{n}.
+$$
+
+With the default `Covariance Type: nonrobust`, `statsmodels` uses the classical assumption
+
+$$
+\boxed{\operatorname{Var}(\boldsymbol{\varepsilon}\mid X) = \sigma^2 I_n}
+\qquad\text{i.e.}\qquad
+\operatorname{Var}(\boldsymbol{\varepsilon}\mid X) =
+\begin{pmatrix}
+\sigma^2 & 0 & \cdots & 0\\
+0 & \sigma^2 & \cdots & 0\\
+\vdots & \vdots & \ddots & \vdots\\
+0 & 0 & \cdots & \sigma^2
+\end{pmatrix}.
+$$
+
+This single matrix equation contains two distinct assumptions.
+
+**1. Homoskedasticity (the diagonal).** Every observation has the same conditional error variance:
+
+$$
+\operatorname{Var}(\varepsilon_i \mid X) = \sigma^2 \qquad \forall i.
+$$
+
+The size of the errors does not change systematically across observations: not with firm size, not with the level of a regressor, not between calm and turbulent markets.
+
+**2. No correlation between errors (the off-diagonal).** For any two different observations $i \neq j$,
+
+$$
+\operatorname{Cov}(\varepsilon_i, \varepsilon_j \mid X) = 0.
+$$
+
+For time series, this rules out serial correlation such as $\operatorname{Cov}(\varepsilon_t, \varepsilon_{t-1}\mid X) \neq 0$. For panels, it also rules out errors that are correlated across firms on the same date, or within the same firm over time.
+
+## The OLS estimator and its covariance matrix
+
+The OLS estimator is
+
+$$
+\widehat{\boldsymbol{\beta}} = (X^\top X)^{-1}X^\top\mathbf{y}.
+$$
+
+Substituting $\mathbf{y} = X\boldsymbol{\beta} + \boldsymbol{\varepsilon}$:
+
+$$
+\begin{aligned}
+\widehat{\boldsymbol{\beta}}
+&= (X^\top X)^{-1}X^\top (X\boldsymbol{\beta} + \boldsymbol{\varepsilon}) \\
+&= \boldsymbol{\beta} + (X^\top X)^{-1}X^\top\boldsymbol{\varepsilon},
+\end{aligned}
+\qquad\text{so}\qquad
+\widehat{\boldsymbol{\beta}} - \boldsymbol{\beta} = (X^\top X)^{-1}X^\top\boldsymbol{\varepsilon}.
+$$
+
+The estimation error is a linear transformation of the errors. Using $\operatorname{Var}(A\mathbf{x}) = A\operatorname{Var}(\mathbf{x})A^\top$ with $A = (X^\top X)^{-1}X^\top$ (which is fixed once we condition on $X$):
+
+$$
+\boxed{
+\operatorname{Var}(\widehat{\boldsymbol{\beta}}\mid X)
+= (X^\top X)^{-1}\, X^\top \operatorname{Var}(\boldsymbol{\varepsilon}\mid X)\, X\, (X^\top X)^{-1}
+}
+$$
+
+This is the **general expression** for the covariance matrix of the OLS estimator. It is often called the *sandwich* formula: the "bread" $(X^\top X)^{-1}$ on both sides, and the "meat" $X^\top \operatorname{Var}(\boldsymbol{\varepsilon}\mid X) X$ in the middle. Everything that follows is about how we estimate the meat.
+
+### The classical (homoskedastic) case
+
+Plugging in $\operatorname{Var}(\boldsymbol{\varepsilon}\mid X) = \sigma^2 I_n$, the sandwich collapses:
+
+$$
+\operatorname{Var}(\widehat{\boldsymbol{\beta}}\mid X)
+= (X^\top X)^{-1} X^\top (\sigma^2 I_n) X (X^\top X)^{-1}
+= \sigma^2 (X^\top X)^{-1} X^\top X (X^\top X)^{-1}
+= \sigma^2 (X^\top X)^{-1}.
+$$
+
+Since $\sigma^2$ is unknown, it is estimated from the residuals $\widehat{\varepsilon}_i = y_i - \mathbf{x}_i^\top\widehat{\boldsymbol{\beta}}$:
+
+$$
+\widehat{\sigma}^2 = \frac{1}{n-k}\sum_{i=1}^{n}\widehat{\varepsilon}_i^2,
+\qquad
+\boxed{\widehat{\operatorname{Var}}_{\text{classical}}(\widehat{\boldsymbol{\beta}}) = \widehat{\sigma}^2 (X^\top X)^{-1}}
+$$
+
+This is what `statsmodels` reports by default.
+
+## From the covariance matrix to p-values
+
+The diagonal of $\widehat{\operatorname{Var}}(\widehat{\boldsymbol{\beta}})$ contains the estimated variances of the individual coefficients, and the standard error of coefficient $j$ is
+
+$$
+SE(\widehat{\beta}_j) = \sqrt{\left[\widehat{\operatorname{Var}}(\widehat{\boldsymbol{\beta}})\right]_{jj}}.
+$$
+
+It is then used to build the $t$-statistic, which for the usual null $H_0: \beta_j = 0$ is
+
+$$
+t_j = \frac{\widehat{\beta}_j - \beta_{j,0}}{SE(\widehat{\beta}_j)} \;\overset{H_0}{=}\; \frac{\widehat{\beta}_j}{SE(\widehat{\beta}_j)},
+$$
+
+from which the $p$-value and the confidence interval $\widehat{\beta}_j \pm t_{1-\alpha/2}\, SE(\widehat{\beta}_j)$ follow. There is a direct chain:
+
+$$
+\text{error covariance assumption}
+\;\longrightarrow\;
+\widehat{\operatorname{Var}}(\widehat{\boldsymbol{\beta}})
+\;\longrightarrow\;
+SE(\widehat{\beta}_j)
+\;\longrightarrow\;
+t_j
+\;\longrightarrow\;
+p\text{-value and confidence interval.}
+$$
+
+If the first link is wrong, everything downstream is wrong.
+
+## What happens if the error covariance is misspecified?
+
+Suppose the truth is more general:
+
+$$
+\operatorname{Var}(\boldsymbol{\varepsilon}\mid X) = \Omega, \qquad \Omega \neq \sigma^2 I_n.
+$$
+
+Then the true covariance of the OLS estimator is the full sandwich,
+
+$$
+\operatorname{Var}(\widehat{\boldsymbol{\beta}}\mid X) = (X^\top X)^{-1} X^\top \Omega X (X^\top X)^{-1},
+$$
+
+and the classical formula $\widehat{\sigma}^2 (X^\top X)^{-1}$ is generally no longer a valid estimator of it. It can be too small (the most common and most dangerous case: spurious significance) or too large.
+
+**Heteroskedasticity.** If $\operatorname{Var}(\varepsilon_i\mid X) = \sigma_i^2$ varies across observations, $\Omega$ is still diagonal but not constant:
+
+$$
+\Omega = \operatorname{diag}(\sigma_1^2, \sigma_2^2, \ldots, \sigma_n^2) \neq \sigma^2 I_n
+\quad\text{unless } \sigma_1^2 = \cdots = \sigma_n^2.
+$$
+
+The classical standard errors are especially misleading when the error variance is larger for observations with extreme values of the regressors. Those observations drive the slope estimate, and the classical formula underweights their noise.
+
+**Serial correlation.** In time series, errors may be correlated over time, $\operatorname{Cov}(\varepsilon_t, \varepsilon_{t-h}\mid X) \neq 0$, so $\Omega$ has non-zero off-diagonal elements:
+
+$$
+\Omega =
+\begin{pmatrix}
+\sigma_1^2 & \operatorname{Cov}(\varepsilon_1,\varepsilon_2) & \cdots\\
+\operatorname{Cov}(\varepsilon_2,\varepsilon_1) & \sigma_2^2 & \cdots\\
+\vdots & \vdots & \ddots
+\end{pmatrix}.
+$$
+
+A classic example in finance is regressing $h$-month returns sampled monthly: consecutive observations share $h-1$ months of returns, so their errors are mechanically correlated. If both the regressor and the errors are positively autocorrelated, the classical standard errors can be dramatically too small.
+
+## Coefficients versus inference
+
+A crucial distinction: misspecifying the error covariance does **not** bias the coefficients. Under exogeneity, $\mathbb{E}[\boldsymbol{\varepsilon}\mid X] = \mathbf{0}$,
+
+$$
+\mathbb{E}[\widehat{\boldsymbol{\beta}}\mid X]
+= \boldsymbol{\beta} + (X^\top X)^{-1}X^\top\,\mathbb{E}[\boldsymbol{\varepsilon}\mid X]
+= \boldsymbol{\beta}.
+$$
+
+Nothing in this derivation uses $\operatorname{Var}(\boldsymbol{\varepsilon}\mid X)$. Heteroskedasticity or serial correlation alone does not bias OLS. What breaks is the **estimated uncertainty** around the coefficients, and OLS is no longer the most efficient linear unbiased estimator: the Gauss–Markov theorem requires $\Omega = \sigma^2 I_n$.
+
+A numerical illustration: suppose $\widehat{\beta}_j = 0.10$.
+
+| | Standard error | $t$-statistic | Significant at 5%? |
+|---|---|---|---|
+| Classical | 0.04 | $0.10 / 0.04 = 2.50$ | Yes |
+| Robust | 0.07 | $0.10 / 0.07 \approx 1.43$ | No |
+
+The coefficient is the same in both rows. Only our assessment of how precisely it is estimated has changed, and with it the conclusion.
+
+## Fix 1: heteroskedasticity-robust (HC) standard errors
+
+The idea of White (1980) is to keep the sandwich but estimate the meat directly from squared residuals, without assuming a constant variance:
+
+$$
+\widehat{\operatorname{Var}}_{\text{HC0}}(\widehat{\boldsymbol{\beta}})
+= (X^\top X)^{-1}\left(\sum_{i=1}^n \widehat{\varepsilon}_i^2\,\mathbf{x}_i\mathbf{x}_i^\top\right)(X^\top X)^{-1}.
+$$
+
+Several finite-sample corrections exist. Writing $h_{ii} = \mathbf{x}_i^\top (X^\top X)^{-1}\mathbf{x}_i$ for the leverage of observation $i$, they replace $\widehat{\varepsilon}_i^2$ with:
+
+| Type | Weight on $\widehat{\varepsilon}_i^2$ | Comment |
+|---|---|---|
+| HC0 | $1$ | White's original estimator, biased downward in small samples |
+| HC1 | $\dfrac{n}{n-k}$ | Degrees-of-freedom correction (Stata's `robust`) |
+| HC2 | $\dfrac{1}{1-h_{ii}}$ | Unbiased under homoskedasticity |
+| HC3 | $\dfrac{1}{(1-h_{ii})^2}$ | Jackknife-like; recommended in small samples |
+
+In `statsmodels`, the coefficients are unchanged and only the covariance changes:
+
+```python
+model = sm.OLS(y, X).fit(cov_type="HC3")
+```
+
+$$
+\widehat{\boldsymbol{\beta}}_{\text{HC3}} = \widehat{\boldsymbol{\beta}}_{\text{OLS}},
+\qquad
+\widehat{\operatorname{Var}}_{\text{HC3}}(\widehat{\boldsymbol{\beta}}) \neq \widehat{\sigma}^2 (X^\top X)^{-1}.
+$$
+
+Note that the summary's footnote changes accordingly, to *"Standard Errors are heteroscedasticity robust (HC3)"*.
+
+## Fix 2: HAC / Newey–West standard errors
+
+With time series, the residuals may be both heteroskedastic and serially correlated. The Heteroskedasticity and Autocorrelation Consistent (HAC) estimator of Newey and West (1987) adds weighted cross-products of residuals up to lag $L$ to the meat:
+
+$$
+\widehat{S} = \widehat{\Gamma}_0 + \sum_{\ell=1}^{L} w_\ell \left(\widehat{\Gamma}_\ell + \widehat{\Gamma}_\ell^\top\right),
+\qquad
+\widehat{\Gamma}_\ell = \sum_{t=\ell+1}^{n} \widehat{\varepsilon}_t\,\widehat{\varepsilon}_{t-\ell}\,\mathbf{x}_t\mathbf{x}_{t-\ell}^\top,
+\qquad
+w_\ell = 1 - \frac{\ell}{L+1},
+$$
+
+$$
+\widehat{\operatorname{Var}}_{\text{HAC}}(\widehat{\boldsymbol{\beta}}) = (X^\top X)^{-1}\,\widehat{S}\,(X^\top X)^{-1}.
+$$
+
+$\widehat{\Gamma}_0$ is exactly the HC0 meat. The declining Bartlett weights $w_\ell$ guarantee that the estimate is positive semi-definite. The lag $L$ must be chosen: a common rule of thumb is $L = \lfloor 4\,(n/100)^{2/9} \rfloor$. With overlapping $h$-period returns, use at least $L = h - 1$.
+
+```python
+model = sm.OLS(y, X).fit(cov_type="HAC", cov_kwds={"maxlags": 5})
+```
+
+Again, the coefficients are identical to OLS; only their estimated covariance changes.
+
+## A simulation: how often do we wrongly reject?
+
+Theory is nice, but how bad is the problem in practice? The cleanest test is a Monte Carlo experiment where the **true slope is zero**. A correct 5% test should then reject $H_0: \beta_1 = 0$ in about 5% of samples. If it rejects much more often, the standard errors are too small and we are finding "significant" effects that do not exist.
+
+```{python}
+#| code-fold: true
+#| code-summary: "Setup and helper function"
+import numpy as np
+import pandas as pd
+import statsmodels.api as sm
+
+rng = np.random.default_rng(42)
+N_SIMS, N_OBS, ALPHA = 2_000, 200, 0.05
+
+
+def rejection_rates(simulate, fits):
+    """Share of simulations in which H0: beta_1 = 0 is rejected, for each covariance estimator."""
+    rejections = {name: 0 for name in fits}
+    for _ in range(N_SIMS):
+        x, y = simulate()
+        X = sm.add_constant(x)
+        for name, fit_kwargs in fits.items():
+            res = sm.OLS(y, X).fit(**fit_kwargs)
+            rejections[name] += res.pvalues[1] < ALPHA
+    return pd.Series({name: count / N_SIMS for name, count in rejections.items()})
+
+
+def ar1(n, rho, rng):
+    """Stationary AR(1) process with unit-variance innovations."""
+    z = np.empty(n)
+    z[0] = rng.standard_normal() / np.sqrt(1 - rho**2)
+    for t in range(1, n):
+        z[t] = rho * z[t - 1] + rng.standard_normal()
+    return z
+```
+
+**Scenario 1: heteroskedasticity.** The error standard deviation grows with $|x_i|$, so the noisiest observations are exactly those with the most leverage on the slope: $y_i = 0 \cdot x_i + |x_i|\, u_i$.
+
+```{python}
+def heteroskedastic():
+    x = rng.standard_normal(N_OBS)
+    y = np.abs(x) * rng.standard_normal(N_OBS)  # true slope = 0
+    return x, y
+
+hetero = rejection_rates(
+    heteroskedastic,
+    {"Classical (nonrobust)": {}, "HC0": {"cov_type": "HC0"}, "HC3": {"cov_type": "HC3"}},
+)
+```
+
+**Scenario 2: serial correlation.** Both the regressor and the errors are persistent AR(1) processes with $\rho = 0.9$, a typical situation for predictive regressions with valuation ratios or interest rates: $y_t = 0 \cdot x_t + \varepsilon_t$.
+
+```{python}
+L_RULE = int(np.floor(4 * (N_OBS / 100) ** (2 / 9)))  # rule-of-thumb lag = 4 for n = 200
+
+def serially_correlated():
+    x = ar1(N_OBS, 0.9, rng)
+    y = ar1(N_OBS, 0.9, rng)  # true slope = 0
+    return x, y
+
+serial = rejection_rates(
+    serially_correlated,
+    {
+        "Classical (nonrobust)": {},
+        "HC3": {"cov_type": "HC3"},
+        f"HAC, L = {L_RULE} (rule of thumb)": {"cov_type": "HAC", "cov_kwds": {"maxlags": L_RULE}},
+        "HAC, L = 20": {"cov_type": "HAC", "cov_kwds": {"maxlags": 20}},
+    },
+)
+```
+
+```{python}
+#| label: tbl-rejections
+#| tbl-cap: "Share of 2,000 simulated samples (n = 200) in which the true null β₁ = 0 is rejected at the 5% level. A correct test should be close to 5%."
+table = pd.concat({"Heteroskedasticity": hetero, "Serial correlation": serial}).rename("Rejection rate").to_frame()
+table.index.names = ["Scenario", "Standard errors"]
+table.style.format("{:.1%}")
+```
+
+Three lessons stand out:
+
+1. **Classical standard errors over-reject in both scenarios.** A test that claims 5% false positives delivers about 25% under heteroskedasticity and more than 50% under serial correlation: in the second case, a pure-noise regressor looks "significant" in half of the samples. That is how spurious results are produced.
+2. **HC standard errors fix heteroskedasticity but not serial correlation.** HC3 brings the rejection rate back to about 5% in the first scenario, but does nothing in the second: HC estimators only look at the diagonal of $\Omega$, so they are blind to correlation between observations.
+3. **HAC helps, but is not a silver bullet with highly persistent data.** It roughly halves the over-rejection with the rule-of-thumb lag, and more lags help further, but with $\rho = 0.9$ and only 200 observations the rejection rate stays well above 5%. With persistent regressors, it pays to be conservative: use more lags, prefer non-overlapping observations when possible, or use methods designed for this setting.
+
+## Beyond OLS: WLS and GLS
+
+Robust standard errors keep the OLS coefficients and only repair the inference. An alternative is to use the covariance structure in the **estimation** itself, which, if $\Omega$ is known or well estimated, gives more efficient estimates.
+
+**Ordinary Least Squares (OLS)** minimizes the unweighted sum of squared residuals and is optimal when $\operatorname{Var}(\boldsymbol{\varepsilon}\mid X) = \sigma^2 I_n$:
+
+$$
+\widehat{\boldsymbol{\beta}}_{\text{OLS}} = \arg\min_{\boldsymbol{\beta}} \sum_{i=1}^{n} \left(y_i - \mathbf{x}_i^\top\boldsymbol{\beta}\right)^2.
+$$
+
+**Weighted Least Squares (WLS)** handles heteroskedasticity by down-weighting noisy observations, typically with $w_i \propto 1/\sigma_i^2$:
+
+$$
+\widehat{\boldsymbol{\beta}}_{\text{WLS}} = \arg\min_{\boldsymbol{\beta}} \sum_{i=1}^{n} w_i \left(y_i - \mathbf{x}_i^\top\boldsymbol{\beta}\right)^2.
+$$
+
+**Generalized Least Squares (GLS)** handles a general $\operatorname{Var}(\boldsymbol{\varepsilon}\mid X) = \Omega$, with unequal variances and correlations:
+
+$$
+\widehat{\boldsymbol{\beta}}_{\text{GLS}} = (X^\top\Omega^{-1}X)^{-1} X^\top\Omega^{-1}\mathbf{y},
+\qquad
+\operatorname{Var}(\widehat{\boldsymbol{\beta}}_{\text{GLS}}\mid X) = (X^\top\Omega^{-1}X)^{-1}.
+$$
+
+Equivalently, GLS is OLS applied to data transformed by $\Omega^{-1/2}$, which makes the transformed errors spherical. WLS is the special case where $\Omega = \operatorname{diag}(\sigma_1^2, \ldots, \sigma_n^2)$, and OLS is the special case $\Omega = \sigma^2 I_n$:
+
+$$
+\text{OLS} \subset \text{WLS} \subset \text{GLS}.
+$$
+
+In practice, $\Omega$ is unknown and must be estimated (*feasible* GLS). If it is badly estimated, FGLS can be worse than OLS, and if the regressors are not strictly exogenous, as with lagged dependent variables, GLS can even become inconsistent. This is why, in empirical finance, the most common choice is **OLS coefficients with robust (HC or HAC) standard errors**: slightly less efficient, but much harder to get wrong. In `statsmodels`, these estimators are available as `sm.WLS(y, X, weights=w)` and `sm.GLS(y, X, sigma=Omega)`.
+
+## Takeaways
+
+- The `statsmodels` note is about **inference**, not about the coefficients: the default standard errors assume $\operatorname{Var}(\boldsymbol{\varepsilon}\mid X) = \sigma^2 I_n$ (homoskedastic *and* uncorrelated errors).
+- If that assumption fails, the OLS coefficients remain unbiased under exogeneity, but **standard errors, $t$-statistics, $p$-values and confidence intervals can be badly wrong**, usually in the direction of too many false discoveries.
+- Cross-sectional data: use `cov_type="HC3"` (or `"HC1"`) by default.
+- Time series and overlapping observations: use `cov_type="HAC"` with a sensible number of lags, and remain cautious with very persistent regressors.
+- Panels: consider clustered standard errors (`cov_type="cluster"`), a topic for another post.
+
+## References
+
+- White, H. (1980). A Heteroskedasticity-Consistent Covariance Matrix Estimator and a Direct Test for Heteroskedasticity. *Econometrica*, 48(4), 817–838.
+- MacKinnon, J. G., & White, H. (1985). Some Heteroskedasticity-Consistent Covariance Matrix Estimators with Improved Finite Sample Properties. *Journal of Econometrics*, 29(3), 305–325.
+- Newey, W. K., & West, K. D. (1987). A Simple, Positive Semi-Definite, Heteroskedasticity and Autocorrelation Consistent Covariance Matrix. *Econometrica*, 55(3), 703–708.
+- Newey, W. K., & West, K. D. (1994). Automatic Lag Selection in Covariance Matrix Estimation. *Review of Economic Studies*, 61(4), 631–653.
+- [`statsmodels` documentation: `RegressionResults.get_robustcov_results`](https://www.statsmodels.org/stable/generated/statsmodels.regression.linear_model.RegressionResults.get_robustcov_results.html)
