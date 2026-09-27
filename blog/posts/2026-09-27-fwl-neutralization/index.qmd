@@ -39,11 +39,56 @@ $$
 \mathbf{v} = X_2\,\mathbf{c} + \mathbf{u}.
 $$
 
-**Step 1: the OLS coefficients.** OLS chooses $\mathbf{c}$ to minimize the sum of squared residuals $\|\mathbf{v} - X_2\mathbf{c}\|^2$. Setting the gradient to zero gives the normal equations $X_2^\top(\mathbf{v} - X_2\widehat{\mathbf{c}}) = \mathbf{0}$, hence
+**Step 1: the OLS coefficients.** OLS chooses the coefficients $\widehat{\mathbf{c}}$ that minimize the sum of squared residuals. Writing $\mathbf{x}_i^\top$ for the $i$-th row of $X_2$ (the regressors of stock $i$):
+
+$$
+S(\mathbf{c}) = \sum_{i=1}^n \left(v_i - \mathbf{x}_i^\top\mathbf{c}\right)^2 = (\mathbf{v} - X_2\mathbf{c})^\top(\mathbf{v} - X_2\mathbf{c}).
+$$
+
+*Expanding the square.* As with $(a-b)^2$, multiplying out gives four terms:
+
+$$
+S(\mathbf{c}) = \mathbf{v}^\top\mathbf{v} - \mathbf{v}^\top X_2\mathbf{c} - \mathbf{c}^\top X_2^\top\mathbf{v} + \mathbf{c}^\top X_2^\top X_2\,\mathbf{c}.
+$$
+
+The two middle terms are equal: $\mathbf{v}^\top X_2\mathbf{c}$ is a single number ($1\times 1$), and a number is equal to its own transpose, $(\mathbf{v}^\top X_2\mathbf{c})^\top = \mathbf{c}^\top X_2^\top\mathbf{v}$. Hence
+
+$$
+S(\mathbf{c}) = \mathbf{v}^\top\mathbf{v} - 2\,\mathbf{c}^\top (X_2^\top\mathbf{v}) + \mathbf{c}^\top (X_2^\top X_2)\,\mathbf{c},
+$$
+
+a constant, plus a term linear in $\mathbf{c}$, plus a term quadratic in $\mathbf{c}$: the matrix version of the parabola $v^2 - 2bc + ac^2$.
+
+*Two derivative rules.* The gradient $\nabla S$ is the vector of partial derivatives $\partial S / \partial c_m$. We need two rules, both checked coordinate by coordinate:
+
+- **Linear term.** For a fixed vector $\mathbf{a}$, $\mathbf{c}^\top\mathbf{a} = \sum_j c_j a_j$, so $\partial(\mathbf{c}^\top\mathbf{a})/\partial c_m = a_m$. The gradient of $\mathbf{c}^\top\mathbf{a}$ is $\mathbf{a}$.
+- **Quadratic term.** For a symmetric matrix $A$, $\mathbf{c}^\top A\mathbf{c} = \sum_j\sum_k c_j A_{jk} c_k$. The coordinate $c_m$ appears when $j = m$ (terms $A_{mk}c_k$) and when $k = m$ (terms $c_jA_{jm}$), so $\partial(\mathbf{c}^\top A\mathbf{c})/\partial c_m = \sum_k A_{mk}c_k + \sum_j A_{jm}c_j = 2\,(A\mathbf{c})_m$, using $A_{jm} = A_{mj}$. The gradient of $\mathbf{c}^\top A\mathbf{c}$ is $2A\mathbf{c}$.
+
+Applying them with $\mathbf{a} = X_2^\top\mathbf{v}$ and $A = X_2^\top X_2$ (which is symmetric, since $(X_2^\top X_2)^\top = X_2^\top X_2$):
+
+$$
+\nabla S(\mathbf{c}) = -2\,X_2^\top\mathbf{v} + 2\,X_2^\top X_2\,\mathbf{c}.
+$$
+
+*Setting the gradient to zero.* At the minimum, the gradient vanishes:
+
+$$
+X_2^\top X_2\,\widehat{\mathbf{c}} = X_2^\top\mathbf{v}
+\quad\Longleftrightarrow\quad
+X_2^\top\big(\mathbf{v} - X_2\widehat{\mathbf{c}}\big) = \mathbf{0}.
+$$
+
+These are the **normal equations**. "Normal" means perpendicular: row $j$ of this system says $\sum_i (X_2)_{ij}\,\widehat{u}_i = 0$, i.e. the residual vector $\widehat{\mathbf{u}} = \mathbf{v} - X_2\widehat{\mathbf{c}}$ is orthogonal to column $j$ of $X_2$. This makes sense: if the residuals were still correlated with one of the regressors, adding a bit more of that regressor would reduce the sum of squares, so we would not be at the minimum.
+
+*Solving.* If the columns of $X_2$ are linearly independent (no column is a combination of the others), $X_2^\top X_2$ is invertible, and
 
 $$
 \widehat{\mathbf{c}} = (X_2^\top X_2)^{-1} X_2^\top \mathbf{v}.
 $$
+
+To see why it is invertible, note that for any $\mathbf{c} \neq \mathbf{0}$, $\mathbf{c}^\top X_2^\top X_2\,\mathbf{c} = (X_2\mathbf{c})^\top(X_2\mathbf{c}) = \|X_2\mathbf{c}\|^2 > 0$, because independent columns cannot combine into the zero vector. The same inequality shows that the matrix of second derivatives, $2X_2^\top X_2$, is positive definite: $S$ is a convex "bowl", and the point where its gradient vanishes is its unique minimum. This is also why the neutralization regression below has no intercept: the $G$ industry dummies already add up to the constant vector, so an intercept would be a combination of them and $X_2^\top X_2$ would not be invertible.
+
+*Check with a single regressor.* If $X_2 = \mathbf{b}$ is one column, $S(c) = \sum_i (v_i - c\,b_i)^2$ and the ordinary derivative gives $S'(c) = -2\sum_i b_i\,(v_i - c\,b_i) = 0$, so $\widehat{c} = \sum_i b_iv_i / \sum_i b_i^2 = \mathbf{b}^\top\mathbf{v}/\mathbf{b}^\top\mathbf{b}$, which is the matrix formula with $1\times 1$ matrices.
 
 **Step 2: the fitted values.** The part of $\mathbf{v}$ explained by $X_2$ is
 
@@ -61,7 +106,7 @@ $$
 
 So $M_2 = I_n - P_2$ is simply "the vector minus its fitted values": multiplying by $M_2$ is the same as running the regression on $X_2$ and keeping the residuals.
 
-**Example with a single column.** If $X_2 = \mathbf{b}$ (only the betas), then $\widehat{c} = \mathbf{b}^\top\mathbf{v} / \mathbf{b}^\top\mathbf{b}$ is a scalar and
+**Example with a single column.** If $X_2 = \mathbf{b}$ (only the betas), we found in Step 1 that $\widehat{c} = \mathbf{b}^\top\mathbf{v} / \mathbf{b}^\top\mathbf{b}$, a scalar, so
 
 $$
 M_{\mathbf{b}}\,\mathbf{v} = \mathbf{v} - \mathbf{b}\,\frac{\mathbf{b}^\top\mathbf{v}}{\mathbf{b}^\top\mathbf{b}},
@@ -93,15 +138,31 @@ In words: **to get the effect of $X_1$ controlling for $X_2$, first strip $X_2$ 
 
 ### Proof
 
-Write the full OLS fit as $\mathbf{y} = X_1\widehat{\boldsymbol{\beta}}_1 + X_2\widehat{\boldsymbol{\beta}}_2 + \mathbf{e}$, where the residuals $\mathbf{e}$ are orthogonal to every regressor: $X_1^\top\mathbf{e} = \mathbf{0}$ and $X_2^\top\mathbf{e} = \mathbf{0}$.
+**Step 1: write the full fit.** The full OLS regression of $\mathbf{y}$ on $[X_1, X_2]$ splits $\mathbf{y}$ into fitted values and residuals:
 
-Multiply both sides by $M_2$. Since $M_2 X_2 = 0$, and $M_2\mathbf{e} = \mathbf{e}$ (because $\mathbf{e}$ is already orthogonal to $X_2$):
+$$
+\mathbf{y} = X_1\widehat{\boldsymbol{\beta}}_1 + X_2\widehat{\boldsymbol{\beta}}_2 + \mathbf{e}.
+$$
+
+By the normal equations (Step 1 of the previous section, applied to the regressors $[X_1, X_2]$), the residuals are orthogonal to every regressor: $X_1^\top\mathbf{e} = \mathbf{0}$ and $X_2^\top\mathbf{e} = \mathbf{0}$.
+
+**Step 2: multiply by $M_2$.** Multiplying each term on the left by $M_2$:
+
+$$
+M_2\mathbf{y} = M_2X_1\widehat{\boldsymbol{\beta}}_1 + M_2X_2\widehat{\boldsymbol{\beta}}_2 + M_2\mathbf{e}.
+$$
+
+- The middle term vanishes, because $M_2 X_2 = 0$.
+- The last term is $\mathbf{e}$ itself: since $X_2^\top\mathbf{e} = \mathbf{0}$, we get $P_2\mathbf{e} = X_2(X_2^\top X_2)^{-1}X_2^\top\mathbf{e} = \mathbf{0}$, hence $M_2\mathbf{e} = \mathbf{e} - P_2\mathbf{e} = \mathbf{e}$. Regressing $\mathbf{e}$ on $X_2$ explains nothing, so its residual is $\mathbf{e}$.
+
+Therefore
 
 $$
 M_2\mathbf{y} = M_2 X_1 \widehat{\boldsymbol{\beta}}_1 + \mathbf{e}.
+\tag{$\star$}
 $$
 
-Now multiply by $X_1^\top$, and use $X_1^\top\mathbf{e} = \mathbf{0}$:
+**Step 3: multiply by $X_1^\top$.** Multiplying $(\star)$ on the left by $X_1^\top$ and using $X_1^\top\mathbf{e} = \mathbf{0}$:
 
 $$
 X_1^\top M_2\mathbf{y} = X_1^\top M_2 X_1\, \widehat{\boldsymbol{\beta}}_1
@@ -109,7 +170,21 @@ X_1^\top M_2\mathbf{y} = X_1^\top M_2 X_1\, \widehat{\boldsymbol{\beta}}_1
 \widehat{\boldsymbol{\beta}}_1 = (X_1^\top M_2 X_1)^{-1} X_1^\top M_2\,\mathbf{y}.
 $$
 
-Because $M_2$ is symmetric and idempotent, $X_1^\top M_2 X_1 = (M_2X_1)^\top(M_2X_1)$ and $X_1^\top M_2\mathbf{y} = (M_2X_1)^\top(M_2\mathbf{y}) = (M_2X_1)^\top\mathbf{y}$, which are exactly the OLS formulas for the two short regressions. Finally, the equation $M_2\mathbf{y} = M_2 X_1 \widehat{\boldsymbol{\beta}}_1 + \mathbf{e}$ shows that $\mathbf{e}$ is also the residual of regressing $M_2\mathbf{y}$ on $M_2X_1$. $\blacksquare$
+**Step 4: recognize the short regressions.** Using $(AB)^\top = B^\top A^\top$, then $M_2^\top = M_2$ (symmetry) and $M_2M_2 = M_2$ (idempotence):
+
+$$
+(M_2X_1)^\top(M_2X_1) = X_1^\top M_2^\top M_2 X_1 = X_1^\top M_2 M_2 X_1 = X_1^\top M_2 X_1,
+$$
+
+$$
+(M_2X_1)^\top(M_2\mathbf{y}) = X_1^\top M_2 M_2\,\mathbf{y} = X_1^\top M_2\,\mathbf{y}
+\qquad\text{and}\qquad
+(M_2X_1)^\top\mathbf{y} = X_1^\top M_2\,\mathbf{y}.
+$$
+
+By Step 1 of the previous section, the OLS coefficients of a regression of a vector $\mathbf{z}$ on regressors $Z$ are $(Z^\top Z)^{-1}Z^\top\mathbf{z}$. With $Z = M_2X_1$ and $\mathbf{z} = M_2\mathbf{y}$, or $\mathbf{z} = \mathbf{y}$, the identities above show that this is exactly $(X_1^\top M_2 X_1)^{-1}X_1^\top M_2\mathbf{y} = \widehat{\boldsymbol{\beta}}_1$.
+
+**Step 5: the residuals.** Equation $(\star)$ says that $M_2\mathbf{y}$ equals $M_2X_1$ times $\widehat{\boldsymbol{\beta}}_1$, which we have just shown to be the OLS coefficient of the regression of $M_2\mathbf{y}$ on $M_2X_1$, plus $\mathbf{e}$. So $\mathbf{e}$, the residual of the full regression, is also the residual of this short regression. $\blacksquare$
 
 $M_2$ depends only on the **column space** of $X_2$: industry dummies without an intercept, or an intercept plus $G-1$ dummies, span the same space and give the same $M_2$.
 
@@ -148,15 +223,17 @@ The pure signal sums to zero within every industry (hence also across the whole 
 
 Now apply the theorem to this regression, with $\mathbf{y} = \mathbf{s}$ (the raw signal), $X_1 = \mathbf{b}$ (beta) and $X_2 = D$ (the industry dummies). Write $M_D$ for the residual maker of the industry dummies: $M_D\mathbf{s}$ is the **industry-neutralized signal** and $M_D\mathbf{b}$ the **industry-neutralized beta**. FWL gives two results.
 
-**1. The beta loading.** The coefficient on beta in the joint regression is the slope of the industry-neutralized signal on the industry-neutralized beta:
+**1. The beta loading.** With a single column $X_1 = \mathbf{b}$, the theorem's formula $(X_1^\top M_2 X_1)^{-1} X_1^\top M_2\,\mathbf{y}$ becomes a ratio of two numbers, and the identities of Step 4 of the proof let us write it with neutralized vectors only:
 
 $$
-\widehat{\delta} = \frac{(M_D\mathbf{b})^\top (M_D\mathbf{s})}{(M_D\mathbf{b})^\top (M_D\mathbf{b})}.
+\widehat{\delta} = \frac{\mathbf{b}^\top M_D\,\mathbf{s}}{\mathbf{b}^\top M_D\,\mathbf{b}} = \frac{(M_D\mathbf{b})^\top (M_D\mathbf{s})}{(M_D\mathbf{b})^\top (M_D\mathbf{b})}.
 $$
+
+This is the slope of the industry-neutralized signal on the industry-neutralized beta (the single-regressor formula of Step 1, with $\mathbf{v} = M_D\mathbf{s}$ and $\mathbf{b}$ replaced by $M_D\mathbf{b}$).
 
 So $\widehat{\delta}$ measures how the signal co-moves with beta **within industries**, not across them. A low-risk signal can load on beta both because defensive industries have low betas and because, inside every industry, the low-volatility stocks have the lowest betas. The industry part is already absorbed by $\widehat{\boldsymbol{\gamma}}$, and $\widehat{\delta}$ only captures the second effect.
 
-**2. The pure signal.** The residuals of this second-step regression are the residuals of the joint regression:
+**2. The pure signal.** By the last part of the theorem, the residuals of this second-step regression (of $M_D\mathbf{s}$ on $M_D\mathbf{b}$) are the residuals of the joint regression, i.e. the pure signal. And the residual of a regression on a single vector $\mathbf{x}$ is obtained by applying $M_{\mathbf{x}}$ (Step 3 of the first section). So:
 
 $$
 \boxed{\;
@@ -181,9 +258,29 @@ FWL also shows which shortcuts fail.
 | $\mathbf{s}$ (raw) on $M_D\mathbf{b}$ | Correct | Wrong: it still contains the industry component of $\mathbf{s}$ |
 | $M_D\mathbf{s}$ on the raw $\mathbf{b}$ (with an intercept) | Wrong | Wrong: beta-neutral, but **no longer industry-neutral** |
 
-The second row is the subtle one: FWL guarantees the coefficient when only the regressor is neutralized, but not the residuals. If you want the pure signal itself, both sides must be industry-neutralized.
+Both failures can be derived with the decomposition of the first section, $\mathbf{v} = P_D\mathbf{v} + M_D\mathbf{v}$: every vector is the sum of its **industry component** $P_D\mathbf{v}$ (its fitted value on the industry dummies, which takes a single value per industry) and its industry-neutralized part $M_D\mathbf{v}$.
 
-The third row is the very common mistake. The raw beta varies across industries (utilities have low betas, semiconductors high ones). Regressing on it mixes the within-industry relation between signal and beta with the across-industry variation of beta, so $\widehat{\delta}$ is wrong. And subtracting a multiple of the raw beta from $M_D\mathbf{s}$ puts industry tilts back into the signal: removing beta has broken the industry neutrality obtained in step 1. The general rule: **when neutralizing sequentially, every later control must itself be neutralized against the earlier ones**, or you should simply run a single regression on all the controls.
+**Second row: raw signal on the neutralized beta.** The theorem guarantees the coefficient $\widehat{\delta}$ when only the regressor is neutralized, but not the residuals. Indeed, writing $\mathbf{s} = M_D\mathbf{s} + P_D\mathbf{s}$, the residual is
+
+$$
+\mathbf{s} - \widehat{\delta}\,M_D\mathbf{b}
+= \underbrace{\big(M_D\mathbf{s} - \widehat{\delta}\,M_D\mathbf{b}\big)}_{\mathbf{s}^\perp}
++ \;P_D\mathbf{s} .
+$$
+
+It is the pure signal **plus the industry component of the raw signal**, which was never removed. If you want the pure signal itself, both sides must be industry-neutralized.
+
+**Third row: neutralized signal on the raw beta.** This is the very common mistake. Write the raw beta as $\mathbf{b} = M_D\mathbf{b} + P_D\mathbf{b}$: a within-industry part and an industry component (utilities have low betas, semiconductors high ones). Two things go wrong.
+
+- *The loading is too small.* With an intercept, the slope is $\widetilde{\delta} = \operatorname{Cov}(M_D\mathbf{s}, \mathbf{b}) / \operatorname{Var}(\mathbf{b})$. The industry-neutralized signal is orthogonal to anything built from industry dummies, including $P_D\mathbf{b}$ and the constant vector, so only $M_D\mathbf{b}$ contributes to the covariance: $\operatorname{Cov}(M_D\mathbf{s}, \mathbf{b}) = \operatorname{Cov}(M_D\mathbf{s}, M_D\mathbf{b})$. The two parts of beta are orthogonal as well, so their variances add up: $\operatorname{Var}(\mathbf{b}) = \operatorname{Var}(M_D\mathbf{b}) + \operatorname{Var}(P_D\mathbf{b})$. Hence
+
+$$
+\widetilde{\delta} = \widehat{\delta} \times \frac{\operatorname{Var}(M_D\mathbf{b})}{\operatorname{Var}(M_D\mathbf{b}) + \operatorname{Var}(P_D\mathbf{b})} ,
+$$
+
+the correct loading shrunk by the share of beta's variance that lies **within** industries. The across-industry variation of beta enters the denominator but is unrelated to the neutralized signal, so it only dilutes the slope.
+
+- *Industry tilts come back.* The residual subtracts $\widetilde{\delta}\,\mathbf{b}$ from the signal, and therefore also $\widetilde{\delta}\,P_D\mathbf{b}$, a vector that takes one value per industry. Removing beta has broken the industry neutrality obtained in step 1. The general rule: **when neutralizing sequentially, every later control must itself be neutralized against the earlier ones**, or you should simply run a single regression on all the controls.
 
 ::: {.callout-tip appearance="simple"}
 ## Weighted regressions
@@ -350,7 +447,16 @@ assert np.allclose(signal_fwl, pure_signal)
 
 # The pure signal is industry-neutral and beta-neutral
 assert np.allclose(D.T @ pure_signal, 0.0) and np.isclose(beta @ pure_signal, 0.0)
+
+# (b) = pure signal + industry component of the raw signal, P_D s = s - M_D s
+assert np.allclose(signal_raw_on_neutral, pure_signal + (raw_signal - signal_ind_neutral))
+
+# (c) = correct loading x share of beta's variance that lies within industries
+within_share: float = float(np.var(beta_ind_neutral) / np.var(beta))
+assert np.isclose(delta_naive, delta_joint * within_share)
+
 print("FWL checks passed: same beta loading for joint, (a) and (b); (a) is exactly the pure signal.")
+print(f"Naive loading: {delta_naive:.3f} = {delta_joint:.3f} x {within_share:.3f} (within-industry share of Var(beta))")
 ```
 
 The table confirms each claim:
@@ -358,8 +464,8 @@ The table confirms each claim:
 - **Raw signal:** negatively correlated with beta and with large industry averages. A portfolio built on it is mostly short the market and long defensive industries.
 - **Industry-neutralized only:** no industry bets, but still negatively correlated with beta, since low-risk stocks are low-beta stocks even within an industry.
 - **Joint regression and (a) FWL:** the same beta loading and the same residual, to machine precision. The pure signal has zero correlation with beta and zero average in every industry.
-- **(b) Raw signal on the industry-neutralized beta:** the beta loading is right, but the residual still carries the industry levels of the raw signal.
-- **(c) Naive:** the beta loading is wrong, and although the signal is now uncorrelated with beta, industry averages have reappeared: removing the raw beta re-introduced industry tilts.
+- **(b) Raw signal on the industry-neutralized beta:** the beta loading is right, but the residual is the pure signal plus the industry component of the raw signal, which is why its gap to the pure signal equals its largest industry average.
+- **(c) Naive:** the beta loading is shrunk towards zero by exactly the within-industry share of beta's variance, as derived above. And although the signal is now uncorrelated with beta, industry averages have reappeared: removing the raw beta re-introduced industry tilts.
 
 ## Takeaways
 
