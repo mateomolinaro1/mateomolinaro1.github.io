@@ -115,7 +115,35 @@ the signal minus the multiple of beta that best fits it.
 **The three properties of $M_2$ follow from this interpretation:**
 
 - **It kills $X_2$: $M_2 X_2 = 0$.** Regressing a column of $X_2$ on $X_2$ fits it perfectly, so the residual is zero. Algebraically, $P_2 X_2 = X_2 (X_2^\top X_2)^{-1} X_2^\top X_2 = X_2$. Equivalently, $X_2^\top M_2\mathbf{v} = \mathbf{0}$ for every $\mathbf{v}$: residuals are orthogonal to the regressors, which is exactly the normal equations of Step 1.
-- **It is idempotent: $M_2 M_2 = M_2$.** A residual is already orthogonal to $X_2$, so regressing it on $X_2$ again gives zero coefficients and leaves it unchanged. Neutralizing twice is the same as neutralizing once. Algebraically, $P_2 P_2 = X_2 (X_2^\top X_2)^{-1} X_2^\top X_2 (X_2^\top X_2)^{-1} X_2^\top = P_2$, so $M_2 M_2 = I - 2P_2 + P_2 P_2 = I - P_2 = M_2$.
+- **It is idempotent: $M_2 M_2 = M_2$.** A residual is already orthogonal to $X_2$, so regressing it on $X_2$ again gives zero coefficients and leaves it unchanged. Neutralizing twice is the same as neutralizing once. Algebraically, we first show that $P_2P_2 = P_2$, then deduce $M_2M_2 = M_2$.
+
+  *Projecting twice.* Write $P_2$ twice, side by side, using its definition:
+
+  $$
+  P_2 P_2 = \Big[X_2 (X_2^\top X_2)^{-1} X_2^\top\Big]\Big[X_2 (X_2^\top X_2)^{-1} X_2^\top\Big].
+  $$
+
+  Matrix multiplication is associative, so we can remove the brackets and group the factors differently, without changing their order. Group the four factors in the middle:
+
+  $$
+  P_2 P_2 = X_2\,(X_2^\top X_2)^{-1}\,\underbrace{\big(X_2^\top X_2\big)\,(X_2^\top X_2)^{-1}}_{=\;I_{k_2}}\,X_2^\top .
+  $$
+
+  The middle group is the $k_2 \times k_2$ matrix $X_2^\top X_2$ multiplied by its own inverse, which is the identity matrix $I_{k_2}$ by definition of the inverse. Multiplying by the identity changes nothing, so what remains is
+
+  $$
+  P_2 P_2 = X_2\,(X_2^\top X_2)^{-1}\,X_2^\top = P_2 .
+  $$
+
+  Intuitively, $P_2\mathbf{v}$ is already a combination of the columns of $X_2$, so projecting it onto those columns a second time leaves it where it is.
+
+  *Neutralizing twice.* Now expand $M_2M_2 = (I_n - P_2)(I_n - P_2)$ term by term, as with $(1-p)(1-p)$, being careful to keep each product in its order (matrix products do not commute in general, but the identity commutes with everything: $I_nP_2 = P_2I_n = P_2$):
+
+  $$
+  M_2 M_2 = I_nI_n - I_nP_2 - P_2I_n + P_2P_2 = I_n - P_2 - P_2 + P_2 = I_n - P_2 = M_2 ,
+  $$
+
+  where we used $P_2P_2 = P_2$ for the last term.
 - **It is symmetric: $M_2^\top = M_2$**, because $X_2^\top X_2$ is symmetric and so is its inverse, hence $P_2^\top = P_2$.
 
 Geometrically, $P_2\mathbf{v}$ is the orthogonal projection of $\mathbf{v}$ onto the space spanned by the columns of $X_2$, and $M_2\mathbf{v}$ is the component of $\mathbf{v}$ perpendicular to that space, with $\mathbf{v} = P_2\mathbf{v} + M_2\mathbf{v}$.
