@@ -29,7 +29,53 @@ $$
 M_2 = I_n - X_2 (X_2^\top X_2)^{-1} X_2^\top .
 $$
 
-For any vector $\mathbf{v}$, $M_2\mathbf{v}$ is the residual of an OLS regression of $\mathbf{v}$ on $X_2$: the part of $\mathbf{v}$ that $X_2$ cannot explain. $M_2$ is symmetric ($M_2^\top = M_2$), idempotent ($M_2 M_2 = M_2$), and it kills $X_2$ ($M_2 X_2 = 0$).
+For any vector $\mathbf{v}$, $M_2\mathbf{v}$ is the residual of an OLS regression of $\mathbf{v}$ on $X_2$: the part of $\mathbf{v}$ that $X_2$ cannot explain. This is worth unpacking, because the whole post rests on it.
+
+### Why $M_2\mathbf{v}$ is a regression residual
+
+Take any vector $\mathbf{v} \in \mathbb{R}^n$ (for us, it will be the signal or the betas) and regress it on the columns of $X_2$:
+
+$$
+\mathbf{v} = X_2\,\mathbf{c} + \mathbf{u}.
+$$
+
+**Step 1: the OLS coefficients.** OLS chooses $\mathbf{c}$ to minimize the sum of squared residuals $\|\mathbf{v} - X_2\mathbf{c}\|^2$. Setting the gradient to zero gives the normal equations $X_2^\top(\mathbf{v} - X_2\widehat{\mathbf{c}}) = \mathbf{0}$, hence
+
+$$
+\widehat{\mathbf{c}} = (X_2^\top X_2)^{-1} X_2^\top \mathbf{v}.
+$$
+
+**Step 2: the fitted values.** The part of $\mathbf{v}$ explained by $X_2$ is
+
+$$
+\widehat{\mathbf{v}} = X_2\widehat{\mathbf{c}} = \underbrace{X_2 (X_2^\top X_2)^{-1} X_2^\top}_{P_2}\,\mathbf{v} = P_2\,\mathbf{v}.
+$$
+
+$P_2$ is the **projection matrix** (or "hat" matrix) of $X_2$: it maps any vector to its best approximation by a linear combination of the columns of $X_2$. Note that it does not depend on $\mathbf{v}$: the same matrix works for every vector we want to regress on $X_2$.
+
+**Step 3: the residuals.** What is left is
+
+$$
+\widehat{\mathbf{u}} = \mathbf{v} - \widehat{\mathbf{v}} = \mathbf{v} - P_2\mathbf{v} = (I_n - P_2)\,\mathbf{v} = M_2\,\mathbf{v}.
+$$
+
+So $M_2 = I_n - P_2$ is simply "the vector minus its fitted values": multiplying by $M_2$ is the same as running the regression on $X_2$ and keeping the residuals.
+
+**Example with a single column.** If $X_2 = \mathbf{b}$ (only the betas), then $\widehat{c} = \mathbf{b}^\top\mathbf{v} / \mathbf{b}^\top\mathbf{b}$ is a scalar and
+
+$$
+M_{\mathbf{b}}\,\mathbf{v} = \mathbf{v} - \mathbf{b}\,\frac{\mathbf{b}^\top\mathbf{v}}{\mathbf{b}^\top\mathbf{b}},
+$$
+
+the signal minus the multiple of beta that best fits it.
+
+**The three properties of $M_2$ follow from this interpretation:**
+
+- **It kills $X_2$: $M_2 X_2 = 0$.** Regressing a column of $X_2$ on $X_2$ fits it perfectly, so the residual is zero. Algebraically, $P_2 X_2 = X_2 (X_2^\top X_2)^{-1} X_2^\top X_2 = X_2$. Equivalently, $X_2^\top M_2\mathbf{v} = \mathbf{0}$ for every $\mathbf{v}$: residuals are orthogonal to the regressors, which is exactly the normal equations of Step 1.
+- **It is idempotent: $M_2 M_2 = M_2$.** A residual is already orthogonal to $X_2$, so regressing it on $X_2$ again gives zero coefficients and leaves it unchanged. Neutralizing twice is the same as neutralizing once. Algebraically, $P_2 P_2 = X_2 (X_2^\top X_2)^{-1} X_2^\top X_2 (X_2^\top X_2)^{-1} X_2^\top = P_2$, so $M_2 M_2 = I - 2P_2 + P_2 P_2 = I - P_2 = M_2$.
+- **It is symmetric: $M_2^\top = M_2$**, because $X_2^\top X_2$ is symmetric and so is its inverse, hence $P_2^\top = P_2$.
+
+Geometrically, $P_2\mathbf{v}$ is the orthogonal projection of $\mathbf{v}$ onto the space spanned by the columns of $X_2$, and $M_2\mathbf{v}$ is the component of $\mathbf{v}$ perpendicular to that space, with $\mathbf{v} = P_2\mathbf{v} + M_2\mathbf{v}$.
 
 ::: {.callout-note appearance="simple"}
 ## Frisch–Waugh–Lovell theorem
