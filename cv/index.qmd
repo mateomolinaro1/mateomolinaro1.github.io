@@ -6,11 +6,6 @@ title: "Curriculum Vitae"
 
 ## Professional Experience
 
-**Systematic Asset Manager** · Paris · Aug 2026 – present\
-*Quantitative Equity Researcher, full time*
-
-- Harvesting alternative datasets to develop low frequency systematic equity strategies
-
 **BNP Paribas AM** (AuM €1,600 bn) · Paris · Apr 2026 – Aug 2026\
 *Quantitative Equity Researcher, intern*
 
