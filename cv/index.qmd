@@ -6,7 +6,7 @@ title: "Curriculum Vitae"
 
 ## Professional Experience
 
-**VIA AM** (Systematic Asset Manager) · Paris · Aug 2026 – present\
+**Systematic Asset Manager** · Paris · Aug 2026 – present\
 *Quantitative Equity Researcher, full time*
 
 - Harvesting alternative datasets to develop low frequency systematic equity strategies

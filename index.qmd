@@ -1,6 +1,6 @@
 ---
 title: "Matéo Molinaro"
-subtitle: "Quantitative Equity Researcher · VIA AM"
+subtitle: "Quantitative Equity Researcher"
 image: files/img/profile.jpg
 image-alt: "Portrait of Matéo Molinaro"
 about:
@@ -25,7 +25,7 @@ about:
       href: cv/index.qmd
 ---
 
-Matéo Molinaro is a junior Quantitative Equity Researcher at VIA AM, where he specializes in low-mid frequency systematic equity strategies. He previously interned as a quantitative equity researcher at BNP Paribas Asset Management, Candriam, and Scientific Beta, working on alpha research and portfolio construction, and interned at Lazard Asset Management as a fundamental equity analyst, presenting stock pitches to portfolio managers.
+Matéo Molinaro is a junior Quantitative Equity Researcher at a systematic asset manager, where he specializes in low-mid frequency systematic equity strategies. He previously interned as a quantitative equity researcher at BNP Paribas Asset Management, Candriam, and Scientific Beta, working on alpha research and portfolio construction, and interned at Lazard Asset Management as a fundamental equity analyst, presenting stock pitches to portfolio managers.
 
 Matéo holds a Master's degree in Quantitative Finance (MSc 272) from Paris-Dauphine and a Specialized Master (MS) in Data Science from ENSAE. He is also a lecturer at Paris-Dauphine, where he teaches the [Python for Finance](teaching/index.qmd#python-for-finance) course at Master's level, and at Paris 1 Panthéon-Sorbonne, where he teaches his own course, [Equity Quantitative Investment Strategies](teaching/index.qmd#equity-quantitative-investment-strategies), at Master's level.
 
@@ -40,7 +40,7 @@ In his free time, he enjoys doing [research](research/index.qmd) (asset pricing)
 
 ## Experience
 
-**VIA AM** · Quantitative Equity Researcher · 2026 – present\
+**Systematic Asset Manager** · Quantitative Equity Researcher · 2026 – present\
 **BNP Paribas AM** · Quantitative Equity Researcher, intern · 2026\
 **Candriam** · Quantitative Equity Researcher, apprentice · 2024 – 2025\
 **Lazard Frères Gestion** · Equity Analyst, intern · 2024\
