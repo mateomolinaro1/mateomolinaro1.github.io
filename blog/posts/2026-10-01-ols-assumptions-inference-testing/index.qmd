@@ -1,0 +1,706 @@
+---
+title: "Linear Regression: OLS, Assumptions, Inference, and Hypothesis Testing"
+description: "A unified, self-contained reference on the classical linear regression model: deriving the OLS estimator in matrix and scalar form, the Gauss–Markov assumptions and what breaks without each one, finite- and large-sample inference, t- and F-tests, and diagnostics for heteroskedasticity, autocorrelation, and multicollinearity."
+author: "Matéo Molinaro"
+date: 2026-10-01
+categories: [econometrics, OLS, statistics]
+---
+
+These notes gather, in one place, the results on the classical linear regression model that come up constantly in applied econometrics: how the Ordinary Least Squares (OLS) estimator is derived, which assumptions make it unbiased, consistent and efficient, what its exact and asymptotic sampling distributions are, and how to test hypotheses and diagnose violations once the data stop cooperating. Every derivation step is written out in full, so the notes are meant to be read start to finish rather than skimmed.
+
+## Ordinary Least Squares (OLS) Estimation
+
+### The linear model
+
+Consider the linear regression model in matrix form
+
+$$
+\underbrace{Y}_{(T\times 1)} \;=\; \underbrace{X}_{(T\times K)}\,\underbrace{\boldsymbol{\beta}}_{(K\times 1)} \;+\; \underbrace{\varepsilon}_{(T\times 1)},
+$$
+
+where $Y$ is the vector of $T$ observations of the dependent variable, $X$ is the $(T\times K)$ matrix of regressors (including a column of ones for the intercept), $\boldsymbol{\beta}$ is the vector of $K$ unknown parameters, and $\varepsilon$ is the vector of unobserved errors.
+
+We want to choose $\hat{\boldsymbol{\beta}}$ to minimize the sum of squared prediction errors
+
+$$
+L(\hat{\boldsymbol{\beta}}) = (Y-\hat Y)^\top(Y-\hat Y), \qquad (Y-\hat Y) \text{ is } (T\times 1).
+$$
+
+### Derivation in matrix notation
+
+Three matrix-calculus facts are used throughout: for a fixed vector $a$ and a symmetric matrix $A$ ($A^\top = A$),
+
+::: {.callout-tip appearance="simple"}
+## Matrix calculus reminders
+$$
+\frac{\partial\, a^\top \boldsymbol{\beta}}{\partial \boldsymbol{\beta}} = a, \qquad
+\frac{\partial\, y^\top X\boldsymbol{\beta}}{\partial \boldsymbol{\beta}} = X^\top y, \qquad
+\frac{\partial\, \boldsymbol{\beta}^\top A \boldsymbol{\beta}}{\partial \boldsymbol{\beta}} = 2A\boldsymbol{\beta} \quad\text{if } A^\top=A.
+$$
+These are the matrix analogues of $\frac{d}{dc}(ac) = a$ and $\frac{d}{dc}(ac^2) = 2ac$, and are proved coordinate by coordinate in the scalar derivation of the slope $\beta_1$ in the covariance-form box below (see the two derivative rules used there).
+:::
+
+Substituting $\hat Y = X\hat{\boldsymbol{\beta}}$,
+
+$$
+\begin{aligned}
+L(\hat{\boldsymbol{\beta}}) &= \big(Y - X\hat{\boldsymbol{\beta}}\big)^\top\big(Y - X\hat{\boldsymbol{\beta}}\big) \\
+&= Y^\top Y - Y^\top X\hat{\boldsymbol{\beta}} - \hat{\boldsymbol{\beta}}^\top X^\top Y + \hat{\boldsymbol{\beta}}^\top X^\top X\hat{\boldsymbol{\beta}}.
+\end{aligned}
+$$
+
+Since $Y^\top X\hat{\boldsymbol{\beta}}$ is a scalar ($1\times 1$), it equals its own transpose: $Y^\top X\hat{\boldsymbol{\beta}} = \big(Y^\top X\hat{\boldsymbol{\beta}}\big)^\top = \hat{\boldsymbol{\beta}}^\top X^\top Y$, so the two middle terms are equal and
+
+$$
+L(\hat{\boldsymbol{\beta}}) = Y^\top Y - 2\,Y^\top X\hat{\boldsymbol{\beta}} + \hat{\boldsymbol{\beta}}^\top X^\top X\hat{\boldsymbol{\beta}}.
+$$
+
+This is the matrix version of the scalar parabola $y^2 - 2y\,x\beta + \beta^2 x^2$. The first-order condition (FOC) sets its gradient to zero, using the two calculus facts above with $a = X^\top Y$ and $A = X^\top X$ (symmetric, since $(X^\top X)^\top = X^\top X$):
+
+$$
+\frac{\partial L(\hat{\boldsymbol{\beta}})}{\partial \hat{\boldsymbol{\beta}}} = -2X^\top Y + 2X^\top X\hat{\boldsymbol{\beta}} = 0
+\;\;\Longleftrightarrow\;\;
+X^\top X\hat{\boldsymbol{\beta}} = X^\top Y.
+$$
+
+Solving this system of **normal equations** for $\hat{\boldsymbol{\beta}}$ gives the OLS estimator:
+
+$$
+\boxed{\hat{\boldsymbol{\beta}} = (X^\top X)^{-1}X^\top Y}
+$$
+
+### Derivation in scalar (non-matrix) notation
+
+With $y_t = \beta_0 + \sum_{k=1}^{K}\beta_k x_{k,t} + \varepsilon_t$, the loss function is
+
+$$
+L(\boldsymbol{\beta}) = \frac{1}{T}\sum_{t=1}^{T}\big(y_t - \hat y_t\big)^2
+= \frac{1}{T}\sum_{t=1}^{T}\Big(y_t - \beta_0 - \sum_{k=1}^{K}\beta_k x_{k,t}\Big)^2.
+$$
+
+Minimizing requires solving the system of $K+1$ first-order conditions $\partial L(\boldsymbol{\beta})/\partial \beta_0 = 0, \ldots, \partial L(\boldsymbol{\beta})/\partial \beta_K = 0$.
+
+#### Special case $K=1$ (simple linear regression)
+
+For $y_t = \beta_0 + \beta_1 x_{1,t} + \varepsilon_t$,
+
+$$
+L(\boldsymbol{\beta}) = \sum_{t=1}^{T}\big(y_t - \beta_0 - \beta_1 x_{1,t}\big)^2.
+$$
+
+**Taking the derivatives.** Differentiating the squared residual $(y_t - \beta_0 - \beta_1 x_{1,t})^2$ with the chain rule — the derivative of $u^2$ is $2u\,u'$, with $u = y_t - \beta_0 - \beta_1 x_{1,t}$ — gives
+
+$$
+\frac{\partial L(\boldsymbol{\beta})}{\partial \beta_0}
+= \sum_{t=1}^T 2\big(y_t - \beta_0 - \beta_1 x_{1,t}\big)\cdot\frac{\partial}{\partial\beta_0}\big(y_t - \beta_0 - \beta_1 x_{1,t}\big)
+= -2\sum_{t=1}^T \big(y_t - \beta_0 - \beta_1 x_{1,t}\big),
+$$
+
+$$
+\frac{\partial L(\boldsymbol{\beta})}{\partial \beta_1}
+= \sum_{t=1}^T 2\big(y_t - \beta_0 - \beta_1 x_{1,t}\big)\cdot\frac{\partial}{\partial\beta_1}\big(y_t - \beta_0 - \beta_1 x_{1,t}\big)
+= -2\sum_{t=1}^T x_{1,t}\big(y_t - \beta_0 - \beta_1 x_{1,t}\big),
+$$
+
+using $\partial(y_t-\beta_0-\beta_1 x_{1,t})/\partial\beta_0 = -1$ and $\partial(y_t-\beta_0-\beta_1 x_{1,t})/\partial\beta_1 = -x_{1,t}$. Setting both derivatives to zero and dropping the common factor $-2$ gives the FOCs:
+
+$$
+\begin{cases}
+\displaystyle \sum_{t=1}^T (y_t - \beta_0 - \beta_1 x_{1,t}) = 0 \\[4pt]
+\displaystyle \sum_{t=1}^T x_{1,t}(y_t - \beta_0 - \beta_1 x_{1,t}) = 0.
+\end{cases}
+$$
+
+**Solving for $\beta_0$.** Dividing the first equation by $T$ splits the sum into three separate averages,
+
+$$
+\sum_{t=1}^T (y_t - \beta_0 - \beta_1 x_{1,t}) = 0
+\;\;\Longrightarrow\;\;
+\frac1T\sum_t y_t - \frac1T\sum_t \beta_0 - \frac1T\sum_t \beta_1 x_{1,t} = 0
+\;\;\Longrightarrow\;\;
+\bar y - \beta_0 - \beta_1 \bar x_1 = 0,
+$$
+
+where $\beta_0$ and $\beta_1$ come out of their sums unchanged because they do not depend on $t$, and $\bar y = \tfrac1T\sum_t y_t$, $\bar x_1 = \tfrac1T\sum_t x_{1,t}$ are the sample means. Solving this last equation for $\beta_0$:
+
+$$
+\beta_0 = \bar y - \beta_1 \bar x_1.
+$$
+
+**Solving for $\beta_1$.** Substituting into the second FOC,
+
+$$
+\sum_t x_{1,t} y_t - \beta_0 \sum_t x_{1,t} - \beta_1 \sum_t x_{1,t}^2 = 0
+\;\;\Longrightarrow\;\;
+\sum_t x_{1,t} y_t - \big(\bar y - \beta_1 \bar x_1\big)\sum_t x_{1,t} - \beta_1 \sum_t x_{1,t}^2 = 0.
+$$
+
+Distributing $-\big(\bar y - \beta_1\bar x_1\big)\sum_t x_{1,t} = -\bar y\sum_t x_{1,t} + \beta_1\bar x_1\sum_t x_{1,t}$ turns this into
+
+$$
+\sum_t x_{1,t} y_t - \bar y\sum_t x_{1,t} + \beta_1\bar x_1\sum_t x_{1,t} - \beta_1\sum_t x_{1,t}^2 = 0.
+$$
+
+Moving the terms that do not involve $\beta_1$ to the right-hand side,
+
+$$
+\beta_1\bar x_1\sum_t x_{1,t} - \beta_1\sum_t x_{1,t}^2 = \bar y\sum_t x_{1,t} - \sum_t x_{1,t} y_t,
+$$
+
+and factoring $\beta_1$ out of the left-hand side collects the $\beta_1$ terms into a single coefficient:
+
+$$
+\beta_1\Big(\bar x_1\sum_t x_{1,t} - \sum_t x_{1,t}^2\Big) = \bar y\sum_t x_{1,t} - \sum_t x_{1,t} y_t
+\;\;\Longrightarrow\;\;
+\beta_1 = \frac{\sum_t x_{1,t}\bar y - \sum_t x_{1,t} y_t}{\sum_t x_{1,t}\bar x_1 - \sum_t x_{1,t}^2}.
+$$
+
+Here $\bar y$ and $\bar x_1$ are constants with respect to the *outer* index $t$ of the sum $\sum_t x_{1,t}\bar y$. It is true that $\bar y = \tfrac1T\sum_t y_t$ is itself *defined* using a sum over $t$ — but that $t$ is a *bound* (dummy) index: it is summed over and disappears once the sum is evaluated, leaving $\bar y$ as a single fixed number for the whole sample. That fixed number does not change as the outer $t$ in $\sum_t x_{1,t}\bar y$ runs from $1$ to $T$, so it can be pulled out of that sum like any other constant: $\sum_t x_{1,t}\bar y = \bar y\sum_t x_{1,t} = \bar y\cdot T\bar x_1$, and similarly $\sum_t x_{1,t}\bar x_1 = \bar x_1\sum_t x_{1,t} = T\bar x_1^2$. They are written inside the sum only to mirror the $\sum_t x_{1,t} y_t$ term they are paired with.
+
+::: {.callout-tip appearance="simple"}
+## Why this is the covariance-over-variance ratio
+Two standard identities (obtained by expanding the square/product and using $\sum_t x_{1,t} = T\bar x_1$) let us rewrite both the numerator and the denominator above:
+
+$$
+\sum_{t=1}^T (x_{1,t}-\bar x_1)(y_t-\bar y) = \sum_t x_{1,t} y_t - T\bar x_1\bar y
+= \sum_t x_{1,t} y_t - \bar y\sum_t x_{1,t},
+$$
+
+$$
+\sum_{t=1}^T (x_{1,t}-\bar x_1)^2 = \sum_t x_{1,t}^2 - T\bar x_1^2
+= \sum_t x_{1,t}^2 - \bar x_1\sum_t x_{1,t}.
+$$
+
+Hence the numerator of $\beta_1$ is minus the first identity, and its denominator is minus the second:
+
+$$
+\bar y\sum_t x_{1,t} - \sum_t x_{1,t} y_t = -\sum_t (x_{1,t}-\bar x_1)(y_t-\bar y),
+\qquad
+\bar x_1\sum_t x_{1,t} - \sum_t x_{1,t}^2 = -\sum_t (x_{1,t}-\bar x_1)^2.
+$$
+
+The two minus signs cancel in the ratio, so
+
+$$
+\beta_1 = \frac{-\sum_t (x_{1,t}-\bar x_1)(y_t-\bar y)}{-\sum_t (x_{1,t}-\bar x_1)^2}
+= \frac{\sum_t (x_{1,t}-\bar x_1)(y_t-\bar y)}{\sum_t (x_{1,t}-\bar x_1)^2}.
+$$
+
+Dividing numerator and denominator by $T-1$ turns the sums into the sample covariance $\operatorname{Cov}(X,Y)$ and sample variance $\operatorname{Var}(X)$ respectively, without changing the ratio.
+:::
+
+Using $\operatorname{Cov}(X,Y) = \dfrac{1}{T-1}\sum_t (x_{1,t}-\bar x_1)(y_t - \bar y)$ and $\operatorname{Var}(X) = \dfrac{1}{T-1}\sum_t (x_{1,t}-\bar x_1)^2$, the expression above is algebraically equivalent to the **OLS slope in covariance form**:
+
+$$
+\boxed{\hat\beta_1 = \frac{\operatorname{Cov}(X,Y)}{\operatorname{Var}(X)} = \frac{\sum_{t=1}^T (x_{1,t}-\bar x_1)(y_t-\bar y)}{\sum_{t=1}^T (x_{1,t}-\bar x_1)^2}}
+$$
+
+This form makes the interpretation transparent: $\hat\beta_1$ measures how much $y_t$ co-moves with $x_{1,t}$ (the covariance), scaled by how much $x_{1,t}$ varies on its own (its variance).
+
+## Assumptions of the Linear Regression Model
+
+**Guiding question:** what are the assumptions of the linear regression model, why are they necessary, what happens if they fail, and how can we remedy the resulting problems? Each assumption below is organized as: statement, why it is needed, consequence of violation, and remedy.
+
+### Assumption A1 — Linearity
+
+The model is linear in parameters:
+
+$$
+y_t = \beta_0 + \sum_{k=1}^{K}\beta_k x_{k,t} + \varepsilon_t.
+$$
+
+- **Needed for:** the closed-form formula $\hat{\boldsymbol{\beta}} = (X^\top X)^{-1}X^\top Y$.
+- **If violated:** no closed-form solution for $\hat{\boldsymbol{\beta}}$ exists.
+- **Remedy:** use another estimation technique (nonlinear least squares, numerical optimization such as the Gauss–Newton algorithm, or a nonlinear/generalized model).
+
+### Assumption A2 — No perfect multicollinearity (full rank)
+
+$\mathrm{rank}(X) = K$ (full column rank), so that $X^\top X$ is invertible.
+
+- **Needed for:** computing $\hat{\boldsymbol{\beta}}$, since $(X^\top X)^{-1}$ must exist.
+- **If violated:** $\det(X^\top X)=0$, so the normal equations $X^\top X\hat{\boldsymbol{\beta}} = X^\top Y$ have either no solution or infinitely many.
+- **Remedy:** drop redundant variables, use a pseudo-inverse, or use Ridge regression, since $\hat{\boldsymbol{\beta}}_{\text{ridge}} = (X^\top X+\lambda I)^{-1}X^\top Y$ is invertible for any $\lambda>0$.
+
+**Proposition (invertibility of $X^\top X$, and why Ridge always works).** Let $X$ be $T\times K$.
+
+(a) $X^\top X$ is symmetric and positive semi-definite.
+(b) $X^\top X$ is invertible if and only if $\mathrm{rank}(X)=K$.
+(c) For any $\lambda>0$, $X^\top X + \lambda I_K$ is invertible regardless of $\mathrm{rank}(X)$.
+
+**Proof.** *(a)* Symmetry: $(X^\top X)^\top = X^\top(X^\top)^\top = X^\top X$. Positive semi-definiteness: for any $z\in\mathbb{R}^K$,
+
+$$
+z^\top(X^\top X)z = (Xz)^\top(Xz) = \|Xz\|^2 \ge 0.
+$$
+
+Hence every eigenvalue $\lambda_i(X^\top X)\ge 0$.
+
+*(b)* Since $X^\top X$ is symmetric, it admits an eigendecomposition $X^\top X = Q\Lambda Q^\top$ with $Q^\top Q = I_K$ (an orthogonal matrix of eigenvectors) and $\Lambda = \mathrm{diag}(\lambda_1,\dots,\lambda_K)$. Then
+
+$$
+\det(X^\top X) = \det(Q)\det(\Lambda)\det(Q^\top) = (\det Q)^2\prod_{i=1}^K \lambda_i = \prod_{i=1}^K\lambda_i,
+$$
+
+since $Q$ is orthogonal, so $\det Q = \pm1$ and $(\det Q)^2=1$. Thus $X^\top X$ is invertible if and only if every $\lambda_i > 0$, which — by (a), where every $\lambda_i \ge 0$ — holds precisely when no eigenvalue is exactly zero, i.e. when $\mathrm{rank}(X)=K$.
+
+*(c)* Using $I_K = QQ^\top$ (orthogonality of $Q$),
+
+$$
+X^\top X + \lambda I_K = Q\Lambda Q^\top + \lambda QQ^\top = Q(\Lambda + \lambda I_K)Q^\top,
+$$
+
+so $\det(X^\top X+\lambda I_K) = \prod_{i=1}^K(\lambda_i + \lambda)$ by the same determinant argument as in (b). Since $\lambda_i \ge 0$ and $\lambda > 0$, every factor $\lambda_i+\lambda$ is strictly positive, hence the determinant is nonzero and $X^\top X+\lambda I_K$ is *always* invertible, whether or not $X$ has full rank. $\blacksquare$
+
+::: {.callout-tip appearance="simple"}
+## Background: computing a determinant
+For $A^{-1}$ to exist we need $\det(A)\neq 0$, which for a matrix of regressors is equivalent to having no exactly collinear columns. One way to compute $\det(A)$ is the recursive Laplace (cofactor) expansion along the first row:
+
+$$
+\det(A) = \sum_{j=1}^{n} (-1)^{1+j} a_{1j}\det(M_{1j}),
+$$
+
+where $M_{ij}$ is the minor obtained by deleting row $i$ and column $j$ from $A$. The inverse is then $A^{-1} = \frac{1}{\det(A)}\,\mathrm{adj}(A)$, where $\mathrm{adj}(A) = C^\top$ is the transpose of the cofactor matrix $C_{ij} = (-1)^{i+j}\det(M_{ij})$. For example, for $A=\begin{pmatrix}a&b&c\\d&e&f\\g&h&i\end{pmatrix}$:
+
+$$
+\det(A) = a(ei-fh) - b(di-fg) + c(dh-eg).
+$$
+:::
+
+### Assumption A3 — Exogeneity
+
+$E[\varepsilon \mid X] = 0$ (a vector of dimension $T\times 1$).
+
+- **Needed for:** $\hat{\boldsymbol{\beta}}$ to be unbiased *and* consistent.
+- **If violated:** $\hat{\boldsymbol{\beta}}$ is biased and inconsistent — this is called **endogeneity**.
+- **Remedy:** the instrumental variables (IV) method — find a variable $Z$ correlated with the endogenous regressor but uncorrelated with the error: $\operatorname{Corr}(Z,X)\neq 0$ and $\operatorname{Corr}(Z,\varepsilon)=0$.
+
+**Proposition (unbiasedness of $\hat{\boldsymbol{\beta}}$ under A1–A3).** $E[\hat{\boldsymbol{\beta}} \mid X] = \boldsymbol{\beta}$.
+
+**Proof.** Substituting $Y = X\boldsymbol{\beta} + \varepsilon$,
+
+$$
+\hat{\boldsymbol{\beta}} = (X^\top X)^{-1}X^\top Y = (X^\top X)^{-1}X^\top(X\boldsymbol{\beta}+\varepsilon) = \boldsymbol{\beta} + (X^\top X)^{-1}X^\top\varepsilon.
+$$
+
+Taking expectations conditional on $X$ — so that $X$, and therefore $(X^\top X)^{-1}X^\top$, is treated as fixed:
+
+$$
+E[\hat{\boldsymbol{\beta}}\mid X] - \boldsymbol{\beta} = E\big[(X^\top X)^{-1}X^\top\varepsilon \,\big|\, X\big] = (X^\top X)^{-1}X^\top\, \underbrace{E[\varepsilon\mid X]}_{=\,0\text{ by A3}} = 0. \qquad \blacksquare
+$$
+
+**Proposition (consistency of $\hat{\boldsymbol{\beta}}$).** Under A1–A3 and A7 (introduced below), $\hat{\boldsymbol{\beta}} \xrightarrow{p} \boldsymbol{\beta}$ as $T\to\infty$.
+
+**Proof.** From the identity above, dividing numerator and denominator by $T$,
+
+$$
+\hat{\boldsymbol{\beta}} - \boldsymbol{\beta} = \left(\frac{X^\top X}{T}\right)^{-1}\frac{X^\top\varepsilon}{T}.
+$$
+
+If the data $(x_t,y_t)$ are i.i.d. with $E[x_tx_t'] = Q_x < \infty$ and $\mathrm{rank}(Q_x)=K$, the (weak) Law of Large Numbers (see the box below) gives $\dfrac{X^\top X}{T} \xrightarrow{p} Q_x$. If in addition $E[x_t\varepsilon_t]<\infty$, applying the LLN to the sequence $x_t\varepsilon_t$ and then the tower property of conditional expectation, using A3,
+
+$$
+\frac{X^\top\varepsilon}{T} = \frac1T\sum_{t=1}^T x_t\varepsilon_t \;\xrightarrow{p}\; E[x_t\varepsilon_t]
+= E\big[x_t\, E[\varepsilon_t\mid x_t]\big] = E[x_t \cdot 0] = 0 .
+$$
+
+By the continuous mapping theorem (Slutsky's lemma), the inverse and the product of converging sequences converge to the inverse and the product of the limits:
+
+$$
+\hat{\boldsymbol{\beta}} - \boldsymbol{\beta} = \left(\frac{X^\top X}{T}\right)^{-1}\frac{X^\top\varepsilon}{T} \;\xrightarrow{p}\; Q_x^{-1}\cdot 0 = 0.
+$$
+
+Hence $\hat{\boldsymbol{\beta}}$ is consistent under: (1) exogeneity $E[\varepsilon\mid X]=0$ (A3), (2) $E[x_t\varepsilon_t]<\infty$, and (3) $\left(\frac{X^\top X}{T}\right)^{-1}\xrightarrow{p} Q_x^{-1}$, which holds under i.i.d. sampling with $Q_x$ invertible. $\blacksquare$
+
+::: {.callout-tip appearance="simple"}
+## Law of Large Numbers
+Let $X_1,\dots,X_T$ be i.i.d. with $E[X_t]=\mu$. Define the sample mean $\bar X_T = \frac1T\sum_{t=1}^T X_t$. Then as $T\to\infty$:
+
+- **Weak LLN:** $\bar X_T \xrightarrow{p} \mu$, i.e. for every $\varepsilon>0$, $P(|\bar X_T-\mu|>\varepsilon)\to 0$.
+- **Strong LLN:** $\bar X_T \xrightarrow{a.s.} \mu$, a stronger, almost-sure statement.
+:::
+
+### Assumption A4 — Conditional homoskedasticity
+
+$\mathrm{diag}\big(V[\varepsilon\mid X]\big) = \sigma^2$ for all $t$: the conditional variance of the error is the same constant for every observation.
+
+- **Needed for:** efficiency of $\hat{\boldsymbol{\beta}}$ — being BLUE, the linear unbiased estimator with lowest variance — and for correct inference, i.e. a correct formula for $V[\hat{\boldsymbol{\beta}}\mid X]$.
+- **If violated:** heteroskedasticity (treated in the diagnostics section below).
+- **Remedy:** use the heteroskedasticity-robust (White, 1980) variance estimator, or a more efficient estimator such as GLS.
+
+**Proposition (variance of $\hat{\boldsymbol{\beta}}$).** Starting from $\hat{\boldsymbol{\beta}}=\boldsymbol{\beta}+(X^\top X)^{-1}X^\top\varepsilon$ and using $V(A\mathbf{z}) = A\,V(\mathbf{z})\,A^\top$ for a fixed matrix $A$ (here $A = (X^\top X)^{-1}X^\top$, conditional on $X$):
+
+$$
+V(\hat{\boldsymbol{\beta}}\mid X) = (X^\top X)^{-1}X^\top\,V[\varepsilon\mid X]\,X(X^\top X)^{-1}.
+$$
+
+If, in addition to A4, there is no conditional autocorrelation (A5 below, so that $V[\varepsilon\mid X] = \sigma^2 I_T$), the middle factor collapses, $X^\top(\sigma^2 I_T)X = \sigma^2 X^\top X$, and this simplifies to
+
+$$
+\boxed{V(\hat{\boldsymbol{\beta}}\mid X) = \sigma^2 (X^\top X)^{-1}}, \qquad \widehat{SE} = \sqrt{\widehat V(\hat{\boldsymbol{\beta}}\mid X)}.
+$$
+
+### Assumption A5 — No autocorrelation
+
+$E[\varepsilon_s \varepsilon_t \mid X] = 0$ for all $s\neq t$: no conditional serial correlation between the errors of different observations.
+
+- **Needed for:** efficiency (BLUE) and for computing $V[\hat{\boldsymbol{\beta}}\mid X]$ correctly.
+- **If violated:** the computed $V[\hat{\boldsymbol{\beta}}\mid X]$ is wrong — the issue arises precisely in its computation, exactly as for heteroskedasticity above.
+- **Remedy:** use a heteroskedasticity- and autocorrelation-consistent (HAC) variance estimator, e.g. Newey–West, or GLS/FGLS.
+
+::: {.callout-note appearance="simple"}
+## Gauss–Markov theorem
+In the linear model $Y=X\boldsymbol{\beta}+\varepsilon$, under
+
+1. **Linearity** (A1): the model is linear in $\boldsymbol{\beta}$;
+2. **Exogeneity** (A3): $E[\varepsilon\mid X]=0$;
+3. **No perfect multicollinearity** (A2): $X^\top X$ invertible;
+4. **Homoskedasticity** (A4): $\operatorname{Var}(\varepsilon\mid X)=\sigma^2 I_T$;
+5. **No autocorrelation** (A5): $\operatorname{Cov}(\varepsilon_i,\varepsilon_j\mid X)=0$ for $i\neq j$;
+
+the OLS estimator $\hat{\boldsymbol{\beta}}=(X^\top X)^{-1}X^\top Y$ is the **B**est **L**inear **U**nbiased **E**stimator (**BLUE**): it has minimum variance among all linear unbiased estimators.
+:::
+
+### Assumption A6 — Conditional normality
+
+$\varepsilon \mid X \sim \mathcal N(0,\sigma^2 I_T)$.
+
+- **Needed for:** finite-sample inference ($t$-tests and $F$-tests), e.g. testing $H_0:\beta_0=\cdots=\beta_K=0$.
+- **If violated:** inference is not valid in small finite samples.
+- **Remedy:** collect more data and invoke the Central Limit Theorem (CLT) for asymptotically valid inference.
+
+::: {.callout-tip appearance="simple"}
+## MLE efficiency
+If an estimator is both the Maximum Likelihood Estimator (MLE) and unbiased, then it is **BUE** (Best Unbiased Estimator, by the Cramér–Rao bound): it has minimum variance among *all* unbiased estimators, not only linear ones. Under normality (A6), $\hat{\boldsymbol{\beta}}_{OLS}=\hat{\boldsymbol{\beta}}_{MLE}$, so $\hat{\boldsymbol{\beta}}_{OLS}$ is in fact **B(L)UE**. This stronger efficiency property does *not* extend to the MLE of $\sigma^2$, which divides by $T$ rather than $T-K$ and is biased — see the finite-sample properties below, where the unbiased estimator $\hat\sigma^2 = \hat\varepsilon^\top\hat\varepsilon/(T-K)$ is derived.
+:::
+
+### Assumption A7 — i.i.d. sampling
+
+$(x_t,y_t)$ are i.i.d. across $t=1,\dots,T$.
+
+- **Needed for:** deriving the *asymptotic* distribution of $\hat{\boldsymbol{\beta}}_{OLS}$ and of test statistics, without requiring normality of $\varepsilon$ (A6).
+- **If violated:** standard asymptotic inference is not valid.
+- **Remedy:** use a robust HAC variance–covariance estimator.
+
+### Summary: assumptions at a glance
+
+| Assumption | Statement | Purpose |
+|---|---|---|
+| A1 | Linearity in parameters | Closed-form $\hat{\boldsymbol{\beta}}$ |
+| A2 | No perfect multicollinearity, $\mathrm{rank}(X)=K$ | $X^\top X$ invertible; computability |
+| A3 | Exogeneity, $E[\varepsilon\mid X]=0$ | Unbiasedness, consistency |
+| A4 | Conditional homoskedasticity | Efficiency (BLUE); correct $V[\hat{\boldsymbol{\beta}}]$ |
+| A5 | No (conditional) autocorrelation | Efficiency (BLUE); correct $V[\hat{\boldsymbol{\beta}}]$ |
+| A6 | Conditional normality of $\varepsilon$ | Finite-sample inference ($t$, $F$ tests) |
+| A7 | i.i.d. sampling | Asymptotic inference without A6 |
+
+## Statistical Properties of the OLS Estimator (Inference)
+
+**Inference** is the use of sample data to draw conclusions about a larger population, or here, about the true, unobserved parameter $\boldsymbol{\beta}$.
+
+### Finite-sample properties
+
+Under A1–A6,
+
+$$
+\boxed{\hat{\boldsymbol{\beta}} \mid X \;\sim\; \mathcal N\big(\boldsymbol{\beta},\ \sigma^2 (X^\top X)^{-1}\big),
+\qquad
+(T-K)\,\frac{\hat\sigma^2}{\sigma^2} \;\sim\; \chi^2_{T-K}}.
+$$
+
+#### Derivation of $\hat{\boldsymbol{\beta}} \mid X \sim \mathcal N(\boldsymbol{\beta},\sigma^2(X^\top X)^{-1})$
+
+From $\hat{\boldsymbol{\beta}} = \boldsymbol{\beta} + (X^\top X)^{-1}X^\top\varepsilon$ and $\varepsilon \sim \mathcal N(0,\sigma^2 I_T)$ (A4, A5, A6 together give exactly this), a linear transformation of a Gaussian vector is Gaussian: if $Z\sim \mathcal N(0,\Sigma)$ then $AZ\sim\mathcal N(0,A\Sigma A^\top)$ for any fixed matrix $A$. With $A=X^\top$,
+
+$$
+X^\top\varepsilon \sim \mathcal N\big(0,\ \sigma^2 X^\top X\big)
+\;\;\Longrightarrow\;\;
+(X^\top X)^{-1}X^\top\varepsilon \sim \mathcal N\big(0,\ \sigma^2(X^\top X)^{-1}X^\top X(X^\top X)^{-1}\big) = \mathcal N\big(0,\sigma^2(X^\top X)^{-1}\big),
+$$
+
+where the last equality uses $(X^\top X)^{-1}X^\top X = I_K$ and the symmetry of $(X^\top X)^{-1}$. Hence $\hat{\boldsymbol{\beta}} = \boldsymbol{\beta}+(X^\top X)^{-1}X^\top\varepsilon \sim \mathcal N(\boldsymbol{\beta},\sigma^2(X^\top X)^{-1})$, since adding the constant vector $\boldsymbol{\beta}$ only shifts the mean.
+
+#### Derivation of $(T-K)\hat\sigma^2/\sigma^2 \sim \chi^2_{T-K}$
+
+With $\hat\sigma^2 = \dfrac{1}{T-K}\sum_{t=1}^T \hat\varepsilon_t^2 = \dfrac{\hat\varepsilon^\top\hat\varepsilon}{T-K}$, the OLS residuals satisfy
+
+$$
+\begin{aligned}
+\hat\varepsilon = Y - X\hat{\boldsymbol{\beta}}
+&= X\boldsymbol{\beta}+\varepsilon - X(X^\top X)^{-1}X^\top(X\boldsymbol{\beta}+\varepsilon) \\
+&= X\boldsymbol{\beta}+\varepsilon - X\boldsymbol{\beta} - X(X^\top X)^{-1}X^\top\varepsilon
+= \big(I_T - \underbrace{X(X^\top X)^{-1}X^\top}_{P_X}\big)\varepsilon = (I_T-P_X)\varepsilon.
+\end{aligned}
+$$
+
+The **projection (hat) matrix** $P_X$ satisfies: (1) $P_X^\top = P_X$ (symmetric, since $X^\top X$ and its inverse are symmetric); (2) $P_X^2 = P_X$ (idempotent, by the same algebra: $P_XP_X = X(X^\top X)^{-1}\underbrace{(X^\top X)(X^\top X)^{-1}}_{=I_K}X^\top = P_X$); (3) $P_X X = X$, since $P_X X = X(X^\top X)^{-1}X^\top X = X$, and its rank equals $K$, the number of columns of $X$. Hence $(I_T-P_X)$ is also symmetric and idempotent — expanding $(I_T-P_X)(I_T-P_X) = I_T - P_X - P_X + P_XP_X = I_T - P_X$ term by term, the same algebra as for any projection and its residual-maker — with rank $T-K$ (the trace of an idempotent matrix equals its rank, and $\mathrm{tr}(I_T-P_X) = T - \mathrm{tr}(P_X) = T-K$). Consequently,
+
+$$
+\hat\sigma^2 = \frac{\varepsilon^\top(I_T-P_X)^\top(I_T-P_X)\varepsilon}{T-K} = \frac{\varepsilon^\top(I_T-P_X)\varepsilon}{T-K},
+$$
+
+using idempotence to replace $(I_T-P_X)^\top(I_T-P_X)$ with $(I_T-P_X)(I_T-P_X) = (I_T-P_X)$. Since $\varepsilon\sim\mathcal N(0,\sigma^2 I_T)$ and $(I_T-P_X)$ is symmetric idempotent with rank $T-K$, the standard result for quadratic forms of Gaussian vectors — a quadratic form $\mathbf{z}^\top P\mathbf{z}$ of a vector $\mathbf{z}\sim\mathcal N(0,I_n)$ in a symmetric idempotent matrix $P$ of rank $r$ follows a $\chi^2_r$ distribution — applies with $\mathbf{z} = \varepsilon/\sigma$ and $P = I_T - P_X$, giving
+
+$$
+\frac{\varepsilon^\top(I_T-P_X)\varepsilon}{\sigma^2} \sim \chi^2_{T-K}
+\;\;\Longrightarrow\;\; (T-K)\frac{\hat\sigma^2}{\sigma^2} \sim \chi^2_{T-K}.
+$$
+
+### Finite-sample properties — summary
+
+| Property | Assumptions required |
+|---|---|
+| $\hat{\boldsymbol{\beta}}=(X^\top X)^{-1}X^\top Y$ is unbiased | Exogeneity: $E[\varepsilon\mid X]=0$ (A3) |
+| $V[\hat{\boldsymbol{\beta}}\mid X]=\sigma^2(X^\top X)^{-1}$ | Cond. homoskedasticity (A4) + no cond. autocorrelation (A5) |
+| $\hat\sigma^2_\varepsilon=\hat\varepsilon^\top\hat\varepsilon/(T-K)$ is an unbiased estimator of $\sigma^2$ | Exogeneity + A4 + A5 |
+| $\hat{\boldsymbol{\beta}}\mid X \sim \mathcal N(\boldsymbol{\beta},\sigma^2(X^\top X)^{-1})$ | Exogeneity + A4 + A5 + normality (A6) |
+| $(T-K)\hat\sigma^2/\sigma^2 \sim \chi^2_{T-K}$ | Exogeneity + A4 + A5 + A6 |
+| $\hat{\boldsymbol{\beta}}$ is BLUE (Gauss–Markov) | A1–A5 |
+| $\hat{\boldsymbol{\beta}}$ is BUE (Cramér–Rao bound) | A1–A5 + normality of $\varepsilon$ (A6) |
+
+### Large-sample (asymptotic) properties
+
+We now study the distribution of $\hat{\boldsymbol{\beta}}$ as $T\to\infty$, under the i.i.d. sampling assumption A7: $(y_t,x_t)$ i.i.d. with $E[x_tx_t']=Q_x<\infty$ and $\mathrm{rank}(Q_x)=K$.
+
+Under A1–A5 and A7 — normality of $\varepsilon$ is *not* needed, by the same argument used above to prove consistency of $\hat{\boldsymbol{\beta}}$:
+
+$$
+\boxed{\hat{\boldsymbol{\beta}} = (X^\top X)^{-1}X^\top Y \;\xrightarrow{p}\; \boldsymbol{\beta}, \qquad
+\hat\sigma^2 = \frac{\hat\varepsilon^\top\hat\varepsilon}{T-K} \;\xrightarrow{p}\; \sigma^2}.
+$$
+
+Moreover, a central limit theorem applied to $\frac{1}{\sqrt T}X^\top\varepsilon$ gives the asymptotic distribution
+
+$$
+\boxed{\hat{\boldsymbol{\beta}} \;\overset{\text{asy}}{\sim}\; \mathcal N\!\Big(\boldsymbol{\beta},\ \frac{\sigma^2}{T}\,Q_x^{-1}\Big)}, \qquad Q_x = E[x_tx_t'].
+$$
+
+Normality of $\varepsilon$ (A6) can therefore be relaxed when $(x_t,y_t)$ is i.i.d., thanks to the CLT: the finite-sample normal result needs A6, while its asymptotic analogue only needs A7. Under A1–A5+A6 (or A1–A5+A7), a feasible estimator of the asymptotic variance is
+
+$$
+\widehat V_{\mathrm{asy}}(\hat{\boldsymbol{\beta}}) = \hat\sigma^2(X^\top X)^{-1} = \widehat V(\hat{\boldsymbol{\beta}}) \;\longrightarrow\; V_{\mathrm{asy}}(\hat{\boldsymbol{\beta}}).
+$$
+
+### Finite vs. large sample properties — summary
+
+| Finite sample ($T$ fixed) | Large sample ($T\to\infty$) |
+|---|---|
+| $\hat{\boldsymbol{\beta}}$ unbiased: $E[\hat{\boldsymbol{\beta}}]=\boldsymbol{\beta}$ | $\hat{\boldsymbol{\beta}}$ consistent: $\hat{\boldsymbol{\beta}}\xrightarrow{p}\boldsymbol{\beta}$ |
+| $\hat\sigma^2$ unbiased: $E[\hat\sigma^2]=\sigma^2$ | $\hat\sigma^2$ consistent: $\hat\sigma^2\xrightarrow{p}\sigma^2$ |
+| $\hat{\boldsymbol{\beta}}\mid X\sim \mathcal N(\boldsymbol{\beta}, \sigma^2(X^\top X)^{-1})$, under A4, A5, A6 (normality) | $\hat{\boldsymbol{\beta}}\overset{\text{asy}}{\sim} \mathcal N(\boldsymbol{\beta}, V_{\mathrm{asy}}(\hat{\boldsymbol{\beta}}))$, $V_{\mathrm{asy}}(\hat{\boldsymbol{\beta}})=\frac{\sigma^2}{T}E[x_tx_t']^{-1}$, under A4, A5, A7 (i.i.d.) |
+| $\hat{\boldsymbol{\beta}}=\hat{\boldsymbol{\beta}}_{MLE}$ is **BUE** (Cramér–Rao bound), under A4, A5, A6 | $\hat{\boldsymbol{\beta}}=\hat{\boldsymbol{\beta}}_{MLE}$ is **asymptotically BUE** (asymptotic Cramér–Rao bound) |
+| $\hat{\boldsymbol{\beta}}$ is **BLUE** (Gauss–Markov, A1–A5 only) | — |
+
+## Hypothesis Testing
+
+### General framework
+
+A statistical test is a formal procedure to decide whether the data provide enough evidence to support or reject a hypothesis about a population or model parameter.
+
+**Steps of a statistical test:**
+
+1. Formulate the null hypothesis $H_0$ about the parameter.
+2. Formulate the alternative hypothesis $H_1$.
+3. Compute the test statistic: a number computed from the sample that measures how far the data are from what $H_0$ predicts, e.g. $T = \dfrac{\hat\beta - \beta_{H_0}}{SE[\hat\beta]}$.
+4. Approximate the sampling distribution of the test statistic *if $H_0$ were true*.
+5. Make a decision: compare the test statistic to a critical value, or compute the $p$-value. If $p\text{-value} < \alpha$, reject $H_0$.
+
+**Critical value:** a threshold determined by (1) the distribution of the test statistic under $H_0$ and (2) a significance level $\alpha$. It defines the rejection region.
+
+**$p$-value:** the probability, under $H_0$, of observing a test statistic as extreme or more extreme than the one actually obtained.
+
+**Example.** $H_0$: a coin is fair (50% heads, 50% tails). You flip it 100 times and observe 65 heads. The computed $p$-value is $0.003$: if the coin were truly fair, there would only be a $0.3\%$ chance of observing 65 or more heads in 100 flips. For a two-sided test on a statistic $T$: $p\text{-value} = 2\times P(T > T_{\mathrm{stat}})$.
+
+### Tests of linear restrictions on $\boldsymbol{\beta}$
+
+There are two main types of tests of linear restrictions on $\boldsymbol{\beta}$:
+
+| | $t$-test | $F$-test |
+|---|---|---|
+| Scope | One linear restriction on an individual $\beta$, e.g. $H_0:\beta_k=0$, or $H_0:\beta_1+\beta_2=0$ | Multiple linear restrictions, jointly on several $\beta$'s: $H_0: R\boldsymbol{\beta} = q$, with $R$ of size $(m\times K)$ and $q$ of size $(m\times 1)$ |
+| Finite-sample distribution | $t_{T-K}$ | $F_{m,\,T-K}$ |
+| Large-sample distribution | $\mathcal N(0,1)$ | $\chi^2_m$ (precisely, $mF^*\xrightarrow{d} \chi^2_m$) |
+
+**Example ($F$-test setup).** To test $H_0:\{\beta_1=0,\ \beta_2=0\}$ jointly, with $\boldsymbol{\beta}=(\beta_0,\beta_1,\beta_2)^\top$:
+
+$$
+R = \begin{pmatrix}0&1&0\\0&0&1\end{pmatrix}_{(2\times 3)}, \qquad
+q = \begin{pmatrix}0\\0\end{pmatrix}_{(2\times 1)}, \qquad m=2.
+$$
+
+#### Derivation of the $t$-test
+
+Consider $H_0:\beta_k = q$ (an individual significance test is the special case $q=0$), written as $H_0: R\boldsymbol{\beta}=q$ with $R=(0,\dots,1,\dots,0)$ (a $1$ in position $k$), $q=0$, $m=1$. From the finite-sample result $\hat{\boldsymbol{\beta}}\mid X \sim \mathcal N(\boldsymbol{\beta},\sigma^2(X^\top X)^{-1})$, and using again that a linear transformation of a Gaussian vector is Gaussian,
+
+$$
+R(\hat{\boldsymbol{\beta}}-\boldsymbol{\beta}) \sim \mathcal N\big(0,\ \sigma^2 R(X^\top X)^{-1}R^\top\big).
+$$
+
+Under $H_0$, $R\boldsymbol{\beta}=q$, so $R(\hat{\boldsymbol{\beta}}-\boldsymbol{\beta})=R\hat{\boldsymbol{\beta}} - q$, giving
+
+$$
+R\hat{\boldsymbol{\beta}} - q \;\overset{H_0}{\sim}\; \mathcal N\big(0,\ \sigma^2 R(X^\top X)^{-1}R^\top\big).
+$$
+
+For the individual case, $R$ picks out a single coordinate, so $R(X^\top X)^{-1}R^\top = (X^\top X)^{-1}_{kk}$, the $(k,k)$ diagonal entry, and
+
+$$
+\frac{\hat\beta_k}{\sqrt{\sigma^2 (X^\top X)^{-1}_{kk}}} \;\overset{H_0}{\sim}\; \mathcal N(0,1).
+$$
+
+This statistic cannot be used directly, since it depends on the unknown $\sigma^2$. The fix uses Student's $t$-distribution: if $Z\sim\mathcal N(0,1)$ and $W\sim\chi^2_\nu$ are independent, then $Z/\sqrt{W/\nu} \sim t_\nu$. Applying this with $Z = \dfrac{\hat\beta_k}{\sqrt{\sigma^2(X^\top X)^{-1}_{kk}}}$ and $W = (T-K)\hat\sigma^2/\sigma^2 \sim \chi^2_{T-K}$ (shown above, and independent of $\hat{\boldsymbol{\beta}}$ under normality), the unknown $\sigma$'s cancel in the ratio $Z/\sqrt{W/(T-K)}$:
+
+$$
+\frac{Z}{\sqrt{W/(T-K)}}
+= \frac{\hat\beta_k/\sqrt{\sigma^2(X^\top X)^{-1}_{kk}}}{\sqrt{\hat\sigma^2/\sigma^2}}
+= \frac{\hat\beta_k}{\hat\sigma\sqrt{(X^\top X)^{-1}_{kk}}},
+$$
+
+giving the **$t$-statistic**, valid under A1–A6:
+
+$$
+\boxed{\dfrac{\hat\beta_k - q}{\hat\sigma\sqrt{(X^\top X)^{-1}_{kk}}} \;\overset{H_0}{\sim}\; t_{T-K}},
+\qquad \widehat{SE}[\hat\beta_k] = \hat\sigma\sqrt{(X^\top X)^{-1}_{kk}},
+$$
+
+where $K$ includes the intercept. Normality of $\varepsilon$ (A6) is required for this *finite-sample* result.
+
+#### Derivation of the $F$-test
+
+We test $H_0: R\boldsymbol{\beta}=q$ with $R$ of size $(m\times K)$, $q$ of size $(m\times1)$, $m>1$. As above,
+
+$$
+R\hat{\boldsymbol{\beta}} - q \;\overset{H_0}{\sim}\; \mathcal N\big(0,\ \sigma^2 \underbrace{R(X^\top X)^{-1}R^\top}_{\Sigma,\ (m\times m)}\big).
+$$
+
+By the quadratic-form result for Gaussian vectors used above (a vector $\mathbf{z}\sim\mathcal N(0,\Sigma)$ satisfies $\mathbf{z}^\top\Sigma^{-1}\mathbf{z}\sim\chi^2_m$, since $\Sigma^{-1/2}\mathbf{z}\sim\mathcal N(0,I_m)$ and the sum of $m$ squared independent standard normals is $\chi^2_m$),
+
+$$
+(R\hat{\boldsymbol{\beta}}-q)^\top\Sigma^{-1}(R\hat{\boldsymbol{\beta}}-q) \;\overset{H_0}{\sim}\; \sigma^2\chi^2_m
+\;\;\Longleftrightarrow\;\;
+\frac{1}{\sigma^2}(R\hat{\boldsymbol{\beta}}-q)^\top\big[R(X^\top X)^{-1}R^\top\big]^{-1}(R\hat{\boldsymbol{\beta}}-q) \;\overset{H_0}{\sim}\; \chi^2_m.
+$$
+
+Since $\sigma^2$ is unknown, replace it with $\hat\sigma^2_\varepsilon = \hat\varepsilon^\top\hat\varepsilon/(T-K)$ and apply the same $t$-distribution trick, now with Fisher's $F$-distribution: if $W_1\sim\chi^2_{\nu_1}$ and $W_2\sim\chi^2_{\nu_2}$ are independent, $\dfrac{W_1/\nu_1}{W_2/\nu_2}\sim F_{\nu_1,\nu_2}$. With $W_1 = (R\hat{\boldsymbol{\beta}}-q)^\top[R(X^\top X)^{-1}R^\top]^{-1}(R\hat{\boldsymbol{\beta}}-q)/\sigma^2\sim\chi^2_m$ and $W_2=(T-K)\hat\sigma^2/\sigma^2\sim\chi^2_{T-K}$, the unknown $\sigma^2$ again cancels, giving the **Fisher $F$-statistic**, valid under A1–A6:
+
+$$
+\boxed{F^\ast = \frac{1}{m\hat\sigma^2}(R\hat{\boldsymbol{\beta}}-q)^\top\big[R(X^\top X)^{-1}R^\top\big]^{-1}(R\hat{\boldsymbol{\beta}}-q)
+\;\overset{H_0}{\sim}\; F_{m,\,T-K}},
+$$
+
+or, equivalently, in terms of residual sums of squares (where $SSR_{H_0}$ is the residual sum of squares of the model re-estimated under the restriction, and $SSR_{H_1}$ that of the unrestricted model):
+
+$$
+\boxed{F^\ast = \frac{SSR_{H_0} - SSR_{H_1}}{SSR_{H_1}}\cdot\frac{T-K}{m}}.
+$$
+
+A common special case tests overall significance of the regression: $H_0: \beta_1=\cdots=\beta_K=0$ versus $H_1: \exists\, k,\ 1\le k\le K,\ \beta_k\neq0$. This is the **global $F$-test**.
+
+As $T\to\infty$, under A1–A5 and A7 (i.i.d. $x_t$), the finite-sample result relaxes to an asymptotic one, by the same CLT argument used for $\hat{\boldsymbol{\beta}}$ itself: for $H_0: R\boldsymbol{\beta}=q$ with $m\ge 1$,
+
+$$
+\boxed{m\,F^\ast \;\xrightarrow{d}\; \chi^2_m}.
+$$
+
+Both the $F$ and $\chi^2$ distributions are supported on $\mathbb R^+$ and are right-skewed.
+
+## Diagnostic (Misspecification) Tests and Remedies
+
+Three classical misspecification issues threaten the Gauss–Markov assumptions: heteroskedasticity (A4), autocorrelation (A5), and multicollinearity (A2). A good starting point is always to plot the residuals: if the model is well specified, the residuals should contain no systematic information. Recall (A4) $\mathrm{diag}(V[\varepsilon_t\mid X]) = \sigma^2 I_T$ for all $t$ (homoskedasticity) and (A5, no conditional autocorrelation) $\operatorname{Cov}[\varepsilon_s,\varepsilon_t\mid X]=0$ for $s\ne t$, which implies $E[\varepsilon_s\varepsilon_t\mid X]=0$.
+
+### Heteroskedasticity
+
+**Heteroskedasticity:** $V[\varepsilon_t\mid X] \neq V[\varepsilon_s\mid X]$ for some $s\neq t$ (non-constant conditional variance).
+
+**Consequences:**
+
+1. $\hat{\boldsymbol{\beta}}$ remains unbiased, consistent, and asymptotically normal, since none of these properties used A4 or A5 (only A1–A3 and A7).
+2. $\hat{\boldsymbol{\beta}}$ is generally no longer BUE / BLUE / efficient, since Gauss–Markov requires A4 — use the White (1980) heteroskedasticity-consistent estimator of $V[\hat{\boldsymbol{\beta}}]$.
+
+**Detection tests:**
+
+- **Engle's ARCH test.** Auxiliary regression $\hat\varepsilon_t^2 = \alpha_0 + \sum_{i=1}^p \alpha_i \hat\varepsilon_{t-i}^2 + u_t$; $H_0: \alpha_i=0\ \forall i$ (homoskedastic) vs. $H_1: \exists\, \alpha_i>0$ (heteroskedastic, ARCH-type).
+- **Breusch–Pagan test.** Auxiliary regression $\hat u_t^2 = \alpha_0+\alpha_1 x_{1t}+\cdots+\alpha_K x_{Kt}+v_t$; $H_0:\alpha_1=\cdots=\alpha_K=0$; if rejected, heteroskedasticity.
+- **White test.** Auxiliary regression includes the regressors, their squares, and cross-products:
+$$
+\hat u_t^2 = \alpha_0 + \sum_{j} \alpha_j x_{jt} + \sum_{j} \gamma_j x_{jt}^2
++ \sum_{j<l} \delta_{jl}\, x_{jt}x_{lt} + v_t;
+$$
+test that all slope coefficients equal zero.
+- **Goldfeld–Quandt test.** Split the sample into two groups and compare residual variances:
+$$
+F = \frac{RSS_2/(n_2-K-1)}{RSS_1/(n_1-K-1)};
+$$
+if $F$ is large, heteroskedasticity is indicated.
+
+**Remedy:** robust standard errors (White/HC), Weighted Least Squares (WLS), or GLS/FGLS.
+
+### Autocorrelation
+
+**Autocorrelation** is a violation of A5: $\operatorname{Cov}[\varepsilon_s,\varepsilon_t\mid X]\neq 0$ for some $s\neq t$. If present, one remedy is to add lagged values of the explanatory variables to the model. The consequences are the same as for heteroskedasticity: $\hat{\boldsymbol{\beta}}$ remains unbiased and consistent but is no longer efficient, so use the Newey–West HAC estimator.
+
+**Detection tests:**
+
+- **Durbin–Watson test.** No auxiliary regression needed. Statistic
+$$
+DW = \frac{\sum_{t=2}^T(\hat u_t - \hat u_{t-1})^2}{\sum_{t=1}^T \hat u_t^2} \approx 2(1-\hat\rho),
+$$
+where $\hat\rho$ is the estimated residual autocorrelation.
+- **Breusch–Godfrey test.** Auxiliary regression
+$$
+\hat u_t = \alpha_0+\beta_1 x_{1t}+\cdots+\beta_K x_{Kt} + \rho_1\hat u_{t-1}+\cdots+\rho_p\hat u_{t-p}+v_t;
+$$
+$H_0:\rho_1=\cdots=\rho_p=0$; if rejected, autocorrelation up to order $p$.
+- **Ljung–Box test.** No auxiliary regression. Statistic
+$$
+Q = T(T+2)\sum_{h=1}^{m}\frac{\hat\rho_h^2}{T-h};
+$$
+$H_0:\rho_1(\hat\varepsilon)=\cdots=\rho_m(\hat\varepsilon)=0$ vs. $H_1:\exists\, \rho_i(\hat\varepsilon)\neq0$; if rejected, residual autocorrelation.
+
+### Multicollinearity
+
+If regressors are highly correlated, $X^\top X$ is nearly singular (see the invertibility proposition under Assumption A2 above), inflating $V[\hat{\boldsymbol{\beta}}]$. Ways to handle it:
+
+1. Penalized regressions (e.g. Ridge, Lasso).
+2. Principal Component Analysis (PCA) — see the appendix below.
+3. Dropping variables highly correlated with the others, as signaled by their **Variance Inflation Factor**:
+$$
+\boxed{VIF_k = \frac{1}{1-R_k^2}},
+$$
+where $R_k^2$ is the $R^2$ from regressing $x_k$ on all other regressors $X_{-k}$ (the matrix $X$ with column $k$ deleted). If $VIF_k > 5\text{–}10$, drop $x_k$.
+
+### Practical empirical workflow
+
+| Heteroskedasticity tests | Autocorrelation tests |
+|---|---|
+| 1. Breusch–Pagan | 1. Durbin–Watson |
+| 2. White | 2. Breusch–Godfrey |
+| 3. Goldfeld–Quandt | 3. Ljung–Box |
+
+**Recommended workflow:**
+
+1. Fit OLS.
+2. Check residual plots.
+3. Run Breusch–Pagan (heteroskedasticity).
+4. Run Breusch–Godfrey (autocorrelation).
+5. If problems exist, use robust standard errors: White / HC standard errors for heteroskedasticity, or Newey–West (HAC) standard errors for both heteroskedasticity and autocorrelation.
+
+## Appendix: Goodness of Fit and Dimensionality Reduction
+
+### $R^2$ — coefficient of determination
+
+$$
+R^2 = 1 - \frac{SS_{\mathrm{res}}}{SS_{\mathrm{tot}}}, \qquad
+SS_{\mathrm{res}} = \sum_{i=1}^N (y_i-\hat y_i)^2, \qquad
+SS_{\mathrm{tot}} = \sum_{i=1}^N (y_i-\bar y)^2, \qquad
+\bar y = \frac1N\sum_{i=1}^N y_i.
+$$
+
+### Note: Principal Component Analysis (PCA)
+
+Given the (standardized) design matrix $X$ and $\Sigma = \frac1n X^\top X$, the first principal component direction solves
+
+$$
+v_1 = \operatorname*{arg\,max}_{v\in\mathbb R^p} v^\top\Sigma v \quad \text{s.t.}\quad v^\top v=1,
+$$
+
+i.e. the eigenvector of $\Sigma$ associated with its largest eigenvalue. Projecting regressors onto the leading principal components is one way to address multicollinearity while retaining most of the explained variance.
