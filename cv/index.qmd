@@ -4,6 +4,10 @@ title: "Curriculum Vitae"
 
 [<i class="bi bi-download"></i> Download PDF](../files/cv/cv.pdf){.btn .btn-outline-primary .btn-sm download="Mateo_Molinaro_CV.pdf"}
 
+## Full CV (PDF)
+
+<iframe class="pdf-embed" src="../files/cv/cv.pdf" title="CV (PDF)"></iframe>
+
 ## Professional Experience
 
 **VIA AM** (Systematic Asset Manager) · Paris · Aug 2026 – Current\
@@ -98,7 +102,3 @@ See [Research](../research/index.qmd) for abstracts and PDFs.
 - Planned outings and a cultural trip
 
 **Interests:** climbing, teaching, fishing, investing
-
-## Full CV (PDF)
-
-<iframe class="pdf-embed" src="../files/cv/cv.pdf" title="CV (PDF)"></iframe>
