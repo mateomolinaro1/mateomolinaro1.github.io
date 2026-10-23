@@ -25,7 +25,7 @@ about:
       href: cv/index.qmd
 ---
 
-I am a Quantitative Equity Researcher who interned at BNP Paribas Asset Management, Candriam, and Scientific Beta, working on alpha research and portfolio construction, and interned at Lazard Asset Management as a fundamental equity analyst, presenting stock pitches to portfolio managers.
+I am a Quantitative Equity Researcher at VIA AM, a systematic asset manager, where I work on alternative datasets and insider trading strategies. I previously interned at BNP Paribas Asset Management, Candriam, and Scientific Beta, working on alpha research and portfolio construction, and interned at Lazard Asset Management as a fundamental equity analyst, presenting stock pitches to portfolio managers.
 
 I hold a Master's degree in Quantitative Finance (MSc 272) from Paris-Dauphine and a Specialized Master (MS) in Data Science from ENSAE. I am also a lecturer at Paris-Dauphine, where I teach the [Python for Finance](teaching/index.qmd#python-for-finance) course at Master's level, and at Paris 1 Panthéon-Sorbonne, where I teach my own course, [Equity Quantitative Investment Strategies](teaching/index.qmd#equity-quantitative-investment-strategies), at Master's level.
 
@@ -40,6 +40,7 @@ In my free time, I enjoy doing [research](research/index.qmd) (asset pricing) an
 
 ## Experience
 
+**VIA AM** · Quantitative Equity Researcher, full time · 2026 – Current\
 **BNP Paribas AM** · Quantitative Equity Researcher, intern · 2026\
 **Candriam** · Quantitative Equity Researcher, apprentice · 2024 – 2025\
 **Lazard Frères Gestion** · Equity Analyst, intern · 2024\
