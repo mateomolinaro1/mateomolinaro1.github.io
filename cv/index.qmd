@@ -6,6 +6,13 @@ title: "Curriculum Vitae"
 
 ## Professional Experience
 
+**VIA AM** (Systematic Asset Manager) · Paris · Aug 2026 – Current\
+*Quantitative Equity Researcher, full time*
+
+- Programmed an ETL pipeline for form 4 SEC filings
+- Developed packages: DuckDB database creation, data quality pipeline, exploratory data analysis, ML pipeline, backtester
+- Harvested alternative datasets and backtested insider trading strategies
+
 **BNP Paribas AM** (AuM €1,600 bn) · Paris · Apr 2026 – Aug 2026\
 *Quantitative Equity Researcher, intern*
 
