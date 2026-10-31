@@ -11,7 +11,7 @@ execute:
 
 [An earlier post](../2026-09-27-fwl-neutralization/index.qmd) used the Frisch–Waugh–Lovell (FWL) theorem to describe sector neutralization as a cross-sectional regression: regress the raw signal on sector dummies (and possibly beta), keep the residual. Written that way, the regression coefficients are $\widehat{\boldsymbol{\gamma}} = (D^\top D)^{-1} D^\top \mathbf{s}$, an inversion of a $G\times G$ matrix, where $G$ is the number of sectors.
 
-In practice, nobody inverts that matrix. Sector neutralization is implemented as: for each stock, subtract the average score of its own sector. This post shows that the two are not merely close — they are **exactly the same number**, because the sector-dummy case is special: the matrix that needs inverting turns out to already be diagonal. It also shows precisely why this shortcut stops working the moment a second, non-categorical control (such as beta) is added to the regression, which is exactly the general case the earlier post deals with.
+Sector neutralization is implemented as: for each stock, subtract the average score of its own sector. This post shows that the two are not merely close — they are **exactly the same number**, because the sector-dummy case is special: the matrix that needs inverting turns out to already be diagonal. It also shows precisely why this shortcut stops working the moment a second, non-categorical control (such as beta) is added to the regression, which is exactly the general case the earlier post deals with.
 
 ## Setup
 
